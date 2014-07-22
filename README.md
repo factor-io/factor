@@ -1,3 +1,4 @@
+[![Code Climate](https://codeclimate.com/github/factor-io/factor.png)](https://codeclimate.com/github/factor-io/factor)
 Factor.io Server Runtime
 ==========
 
