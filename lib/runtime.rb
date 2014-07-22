@@ -56,11 +56,7 @@ module Factor
 
       ws = @connectors[service_id.to_sym].listener(listener_id)
 
-      ws.on :open do |event|
-        params.merge!(@credentials[service_id.to_sym] || {})
-        success "Workflow '#{service_id}::#{listener_id}' starting"
-        ws.send(params.to_json)
-      end
+      handle_on_open(service_id, listener_id, 'Listener', ws, params)
 
       ws.on :close do |event|
         error 'Listener disconnected'
@@ -76,14 +72,7 @@ module Factor
         case listener_response['type']
         when'start_workflow'
           success "Workflow '#{service_id}::#{listener_id}' triggered"
-          begin
-            block.call(listener_response['payload']) if block
-          rescue => ex
-            error "Error in workflow definition: #{ex.message}"
-            ex.backtrace.each do |line|
-              error "  #{line}"
-            end
-          end
+          error_handle_call(listener_response, &block)
         when 'started'
           success "Workflow '#{service_id}::#{listener_id}' started"
         when 'fail'
@@ -119,11 +108,7 @@ module Factor
     def run(service_id, action_id, params = {}, &block)
       ws = @connectors[service_id.to_sym].action(action_id)
 
-      ws.on :open do |event|
-        params.merge!(@credentials[service_id.to_sym] || {})
-        success "Action '#{service_id}::#{action_id}' called"
-        ws.send(params.to_json)
-      end
+      handle_on_open(service_id, action_id, 'Action', ws, params)
 
       ws.on :error do |event|
         error 'Connection dropped while calling action'
@@ -135,14 +120,7 @@ module Factor
         when 'return'
           ws.close
           success "Action '#{service_id}::#{action_id}' responded"
-          begin
-            block.call(action_response['payload']) if block
-          rescue => ex
-            error "Error in workflow definition: #{ex.message}"
-            ex.backtrace.each do |line|
-              error "  #{line}"
-            end
-          end
+          error_handle_call(action_response, &block)
         when 'fail'
           ws.close
           error "  #{action_response['message']}"
@@ -161,6 +139,23 @@ module Factor
     end
 
     private
+
+    def handle_on_open(service_id, action_id, dsl_type, ws, params)
+      ws.on :open do |event|
+        params.merge!(@credentials[service_id.to_sym] || {})
+        success "#{dsl_type.capitalize} '#{service_id}::#{action_id}' called"
+        ws.send(params.to_json)
+      end
+    end
+
+    def error_handle_call(listener_response, &block)
+      block.call(listener_response['payload']) if block
+    rescue => ex
+      error "Error in workflow definition: #{ex.message}"
+      ex.backtrace.each do |line|
+        error "  #{line}"
+      end
+    end
 
     def success(msg)
       log_message('type' => 'log', 'status' => 'success', 'message' => msg)
@@ -194,6 +189,4 @@ module Factor
       end
     end
   end
-
 end
-
