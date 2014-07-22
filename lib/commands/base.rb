@@ -10,33 +10,27 @@ module Factor
 
     # Base command with common methods used by all commands
     class Command
-      DEFAULT_CREDENTIALS_FILENAME  = File.expand_path('./credentials.yml')
-      DEFAULT_CONNECTORS_FILENAME   = File.expand_path('./connectors.yml')
+      DEFAULT_FILENAME = {
+        connectors:   File.expand_path('./connectors.yml'),
+        credentials:  File.expand_path('./credentials.yml')
+      }
 
       attr_accessor :destination_stream
 
       def info(options = {})
-        options['section']      ||= 'INFO'
-        options['section_text']   = options['section'].center(10).bold
-        log_line options
+        log_line :info, options
       end
 
       def error(options = {})
-        options['section']      ||= 'ERROR'
-        options['section_text']   = options['section'].center(10).red
-        log_line options
+        log_line :error, options
       end
 
       def warn(options = {})
-        options['section']      ||= 'WARNING'
-        options['section_text']   = options['section'].center(10).yellow
-        log_line options
+        log_line :warn, options
       end
 
       def success(options = {})
-        options['section']      ||= 'SUCCESS'
-        options['section_text']   = options['section'].center(10).green
-        log_line options
+        log_line :success, options
       end
 
       def debug(options = {})
@@ -51,38 +45,39 @@ module Factor
       end
 
       def load_config(options = {})
-        load_credentials options
-        load_connectors options
+        load_config_data :credentials, options
+        load_config_data :connectors, options
       end
 
       private
 
-      def load_credentials(options = {})
-        relative_path = options[:credentials] || DEFAULT_CREDENTIALS_FILENAME
-        credentials_filename = File.expand_path(relative_path)
-        info message: "Loading credentials from #{credentials_filename}"
-        credentials_data = YAML.load(File.read(credentials_filename))
-        configatron.credentials.configure_from_hash(credentials_data)
+      def load_config_data(config_type, options = {})
+        relative_path = options[config_type] || DEFAULT_FILENAME[config_type]
+        absolute_path = File.expand_path(relative_path)
+        info message: "Loading #{config_type.to_s} from #{absolute_path}"
+        data = YAML.load(File.read(absolute_path))
+        configatron[config_type].configure_from_hash(data)
       rescue => ex
-        exception "Couldn't load credentials from #{credentials_filename}", ex
+        exception "Couldn't load #{config_type.to_s} from #{absolute_path}", ex
       end
 
-      def load_connectors(options = {})
-        relative_path = options[:connectors] || DEFAULT_CONNECTORS_FILENAME
-        connectors_filename = File.expand_path(relative_path)
-        info message: "Loading connectors from #{connectors_filename}"
-        connectors_data = YAML.load(File.read(connectors_filename))
-        configatron.connectors.configure_from_hash(connectors_data)
-      rescue => ex
-        exception "Couldn't load credentials from #{connectors_filename}", ex
-      end
-
-      def log_line(options = {})
+      def log_line(section, options = {})
         options       = { message: options } if options.is_a?(String)
         tag           = tag(options)
         message       = options['message'] || options[:message]
-        section_text  = options['section_text'] || 'INFO'
+        section_text  = format_section(section)
         write "[ #{section_text} ] [#{time}]#{tag} #{message}" if message
+      end
+
+      def format_section(section)
+        formated_section = section.to_s.upcase.center(10)
+        case section
+        when :error then formated_section.red
+        when :info then formated_section.bold
+        when :warn then formated_section.yellow
+        when :success then formated_section.green
+        else formated_section
+        end
       end
 
       def tag(options)
