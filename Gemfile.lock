@@ -26,6 +26,7 @@ GEM
     highline (1.6.20)
     multi_json (1.10.1)
     netrc (0.7.7)
+    rake (10.2.2)
     rest_client (1.7.3)
       netrc (~> 0.7.7)
     rspec (2.14.1)
@@ -49,4 +50,5 @@ PLATFORMS
 DEPENDENCIES
   codeclimate-test-reporter (~> 0.3.0)
   factor!
+  rake (~> 10.2.2)
   rspec (~> 2.14.1)
