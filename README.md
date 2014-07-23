@@ -1,5 +1,6 @@
 [![Code Climate](https://codeclimate.com/github/factor-io/factor.png)](https://codeclimate.com/github/factor-io/factor)
 [![Test Coverage](https://codeclimate.com/github/factor-io/factor/coverage.png)](https://codeclimate.com/github/factor-io/factor)
+[![Build Status](https://travis-ci.org/factor-io/factor.svg)](https://travis-ci.org/factor-io/factor)
 Factor.io Server Runtime
 ==========
 
