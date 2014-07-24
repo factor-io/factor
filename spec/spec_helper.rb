@@ -7,8 +7,6 @@ end
 
 $:.unshift File.dirname(__FILE__) + '/../lib'
 
-require 'factor'
-
 def mock_terminal
   @input = StringIO.new
   @output = StringIO.new
