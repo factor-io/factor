@@ -1,7 +1,5 @@
 require 'spec_helper'
 
-require 'listener'
-
 module Factor
   describe Listener do
     it "does stuff" do
