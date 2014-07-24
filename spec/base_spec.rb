@@ -1,5 +1,6 @@
-require 'commands/base'
 require 'spec_helper'
+
+require 'commands/base'
 
 module Factor::Commands
   describe Command do
