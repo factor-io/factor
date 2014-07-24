@@ -7,8 +7,13 @@ end
 
 $:.unshift File.dirname(__FILE__) + '/../lib'
 
-def mock_terminal
-  @input = StringIO.new
-  @output = StringIO.new
-  $terminal = HighLine.new @input, @output
+def capture_stdout(&block)
+  original_stdout = $stdout
+  $stdout = fake = StringIO.new
+  begin
+    yield
+  ensure
+    $stdout = original_stdout
+  end
+  fake.string
 end
