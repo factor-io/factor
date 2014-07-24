@@ -106,7 +106,6 @@ module Factor
         when 'info' then info message_info
         when 'success' then success message_info
         when 'warn' then warn message_info
-        when 'debug' then debug message_info
         else error message_info
         end
       end

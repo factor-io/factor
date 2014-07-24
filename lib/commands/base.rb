@@ -33,9 +33,6 @@ module Factor
         log_line :success, options
       end
 
-      def debug(options = {})
-      end
-
       def exception(message, exception)
         error 'message' => message
         error 'message' => "  #{exception.message}"
