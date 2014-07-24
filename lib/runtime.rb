@@ -178,15 +178,5 @@ module Factor
       message_info['workflow_id'] = @id
       @logger.call(message_info) if @logger
     end
-
-    def define_method_in_class(class_ref, class_id, method_id, &block)
-      class_name  = class_id.classify
-      method_name = method_id.underscore
-      class_ref.class.instance_eval do
-        define_method(method_name) do |params = {}, &passed_block|
-          block.call(class_name, method_name, params, &passed_block)
-        end
-      end
-    end
   end
 end
