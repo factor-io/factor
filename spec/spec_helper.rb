@@ -1,8 +1,10 @@
-require "codeclimate-test-reporter"
+# encoding: UTF-8
+
+require 'codeclimate-test-reporter'
 require 'stringio'
 
 CodeClimate::TestReporter.start do
-  add_filter "/spec/"
+  add_filter '/spec/'
 end
 
 # include anything that could be tested
@@ -12,10 +14,9 @@ require 'listener'
 require 'runtime'
 require 'websocket_manager'
 
+$LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
 
-$:.unshift File.dirname(__FILE__) + '/../lib'
-
-def capture_stdout(&block)
+def capture_stdout(&_block)
   original_stdout = $stdout
   $stdout = fake = StringIO.new
   begin
