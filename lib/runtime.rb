@@ -45,13 +45,6 @@ module Factor
       end
     end
 
-    def workflow(key, value)
-      @workflow_spec[key] = value
-      @name               = value if @key == 'name'
-      @id                 = value if @key == 'id'
-      @description        = value if @key == 'description'
-    end
-
     def listen(service_id, listener_id, params = {}, &block)
 
       ws = @connectors[service_id.to_sym].listener(listener_id)
