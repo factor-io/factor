@@ -52,7 +52,7 @@ describe Factor::Commands::Command do
       credentials_file = Tempfile.new('credentials')
       connectors_file = Tempfile.new('connectors')
 
-      credentials_content={
+      credentials_content = {
         'github' => {
           'api_key' => 'fake_github_key'
         },
@@ -61,7 +61,7 @@ describe Factor::Commands::Command do
         }
       }
 
-      connectors_content={
+      connectors_content = {
         'timer'   => 'http://localhost:9294/v0.4/timer',
         'web'     => 'http://localhost:9294/v0.4/web',
         'github'  => 'http://localhost:9294/v0.4/github',
@@ -78,8 +78,7 @@ describe Factor::Commands::Command do
       options.credentials = credentials_file.path
       options.connectors  = connectors_file.path
 
-
-      config_settings={
+      config_settings = {
         credentials: options.credentials,
         connectors:  options.connectors
       }
