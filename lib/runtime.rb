@@ -41,24 +41,16 @@ module Factor
 
     def load(workflow_definition)
       EM.run do
-        self.instance_eval(workflow_definition)
+        instance_eval(workflow_definition)
       end
     end
 
-    def workflow(key, value)
-      @workflow_spec[key] = value
-      @name               = value if @key == 'name'
-      @id                 = value if @key == 'id'
-      @description        = value if @key == 'description'
-    end
-
     def listen(service_id, listener_id, params = {}, &block)
-
       ws = @connectors[service_id.to_sym].listener(listener_id)
 
       handle_on_open(service_id, listener_id, 'Listener', ws, params)
 
-      ws.on :close do |event|
+      ws.on :close do
         error 'Listener disconnected'
         if @reconnect
           warn 'Reconnecting...'
@@ -110,7 +102,7 @@ module Factor
 
       handle_on_open(service_id, action_id, 'Action', ws, params)
 
-      ws.on :error do |event|
+      ws.on :error do
         error 'Connection dropped while calling action'
       end
 
@@ -141,7 +133,7 @@ module Factor
     private
 
     def handle_on_open(service_id, action_id, dsl_type, ws, params)
-      ws.on :open do |event|
+      ws.on :open do
         params.merge!(@credentials[service_id.to_sym] || {})
         success "#{dsl_type.capitalize} '#{service_id}::#{action_id}' called"
         ws.send(params.to_json)
@@ -177,16 +169,6 @@ module Factor
       message_info['instance_id'] = @instance_id
       message_info['workflow_id'] = @id
       @logger.call(message_info) if @logger
-    end
-
-    def define_method_in_class(class_ref, class_id, method_id, &block)
-      class_name  = class_id.classify
-      method_name = method_id.underscore
-      class_ref.class.instance_eval do
-        define_method(method_name) do |params = {}, &passed_block|
-          block.call(class_name, method_name, params, &passed_block)
-        end
-      end
     end
   end
 end

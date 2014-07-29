@@ -7,7 +7,6 @@ require 'fileutils'
 
 module Factor
   module Commands
-
     # Base command with common methods used by all commands
     class Command
       DEFAULT_FILENAME = {
@@ -33,9 +32,6 @@ module Factor
         log_line :success, options
       end
 
-      def debug(options = {})
-      end
-
       def exception(message, exception)
         error 'message' => message
         error 'message' => "  #{exception.message}"
@@ -54,11 +50,11 @@ module Factor
       def load_config_data(config_type, options = {})
         relative_path = options[config_type] || DEFAULT_FILENAME[config_type]
         absolute_path = File.expand_path(relative_path)
-        info message: "Loading #{config_type.to_s} from #{absolute_path}"
+        info message: "Loading #{config_type} from #{absolute_path}"
         data = YAML.load(File.read(absolute_path))
         configatron[config_type].configure_from_hash(data)
       rescue => ex
-        exception "Couldn't load #{config_type.to_s} from #{absolute_path}", ex
+        exception "Couldn't load #{config_type} from #{absolute_path}", ex
       end
 
       def log_line(section, options = {})
@@ -81,19 +77,17 @@ module Factor
       end
 
       def tag(options)
-        tag = ''
-        if options['workflow_id'] && options['instance_id']
-          tag = "[#{options['workflow_id']}:#{options['instance_id']}]"
-        elsif options['workflow_id'] && !options['instance_id']
-          tag = "[#{options['workflow_id']}]"
-        elsif !options['workflow_id'] && options['instance_id']
-          tag = "[#{options['instance_id']}]"
-        end
-        tag
+        primary = options['service_id'] || options['instance_id']
+        secondary = if options['service_id'] && options['instance_id']
+                      ":#{options['instane_id']}"
+                    else
+                      ''
+                    end
+        primary ? "[#{primary}#{secondary}]" : ''
       end
 
       def time
-         Time.now.localtime.strftime('%m/%d/%y %T.%L')
+        Time.now.localtime.strftime('%m/%d/%y %T.%L')
       end
 
       def write(message)

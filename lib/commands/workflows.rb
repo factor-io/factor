@@ -7,15 +7,13 @@ require 'runtime'
 
 module Factor
   module Commands
-
     # Workflow is a Command to start the factor runtime from the CLI
     class Workflow < Factor::Commands::Command
-
       def initialize
         @workflows = {}
       end
 
-      def server(args, options)
+      def server(_args, options)
         config_settings = {}
         config_settings[:credentials] = options.credentials
         config_settings[:connectors]  = options.connectors
@@ -46,7 +44,7 @@ module Factor
       def block_until_interupt
         log_message 'status' => 'info', 'message' => 'Ctrl-c to exit'
         begin
-          while true
+          loop do
             sleep 1
           end
         rescue Interrupt
@@ -75,7 +73,7 @@ module Factor
           connector_settings = configatron.connectors.to_hash
           credential_settings = configatron.credentials.to_hash
           runtime = Runtime.new(connector_settings, credential_settings)
-          runtime.logger = self.method(:log_message)
+          runtime.logger = method(:log_message)
         rescue => ex
           message = "Couldn't setup workflow process for #{workflow_filename}"
           exception message, ex
@@ -106,7 +104,6 @@ module Factor
         when 'info' then info message_info
         when 'success' then success message_info
         when 'warn' then warn message_info
-        when 'debug' then debug message_info
         else error message_info
         end
       end
