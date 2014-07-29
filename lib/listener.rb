@@ -4,10 +4,8 @@ require 'rest_client'
 require 'websocket_manager'
 
 module Factor
-
   # Class Listener for integrating with connector service
   class Listener
-
     def initialize(url)
       @url = url
     end
@@ -16,14 +14,12 @@ module Factor
       get("#{@url}/definition")
     end
 
-    def listener(listener_id, &block)
-      ws = listen("#{@url}/listeners/#{listener_id}")
-      ws
+    def listener(listener_id)
+      listen("#{@url}/listeners/#{listener_id}")
     end
 
-    def action(action_id, &block)
-      ws = listen("#{@url}/actions/#{action_id}")
-      ws
+    def action(action_id)
+      listen("#{@url}/actions/#{action_id}")
     end
 
     private

@@ -41,17 +41,16 @@ module Factor
 
     def load(workflow_definition)
       EM.run do
-        self.instance_eval(workflow_definition)
+        instance_eval(workflow_definition)
       end
     end
 
     def listen(service_id, listener_id, params = {}, &block)
-
       ws = @connectors[service_id.to_sym].listener(listener_id)
 
       handle_on_open(service_id, listener_id, 'Listener', ws, params)
 
-      ws.on :close do |event|
+      ws.on :close do
         error 'Listener disconnected'
         if @reconnect
           warn 'Reconnecting...'
@@ -103,7 +102,7 @@ module Factor
 
       handle_on_open(service_id, action_id, 'Action', ws, params)
 
-      ws.on :error do |event|
+      ws.on :error do
         error 'Connection dropped while calling action'
       end
 
@@ -134,7 +133,7 @@ module Factor
     private
 
     def handle_on_open(service_id, action_id, dsl_type, ws, params)
-      ws.on :open do |event|
+      ws.on :open do
         params.merge!(@credentials[service_id.to_sym] || {})
         success "#{dsl_type.capitalize} '#{service_id}::#{action_id}' called"
         ws.send(params.to_json)
