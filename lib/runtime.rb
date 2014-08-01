@@ -65,7 +65,7 @@ module Factor
         when'start_workflow'
           success "Workflow '#{service_id}::#{listener_id}' triggered"
           error_handle_call(listener_response, &block)
-        when 'started'
+        when 'return'
           success "Workflow '#{service_id}::#{listener_id}' started"
         when 'fail'
           error "Workflow '#{service_id}::#{listener_id}' failed to start"
