@@ -10,7 +10,6 @@ module Factor
 
     def initialize(uri, headers = {})
       u                     = URI(uri)
-      u.scheme              = 'wss' if u.scheme == 'https'
       @uri                  = u.to_s
       @settings             = { ping: 10, retry: 5 }
       @settings[:headers]   = headers if headers && headers != {}
