@@ -6,6 +6,7 @@ require 'yaml'
 require 'eventmachine'
 require 'uri'
 require 'faye/websocket'
+require 'ostruct'
 
 require 'listener'
 require 'commands/base'
@@ -141,7 +142,7 @@ module Factor
     end
 
     def error_handle_call(listener_response, &block)
-      block.call(listener_response['payload']) if block
+      block.call(OpenStruct.new(listener_response['payload'])) if block
     rescue => ex
       error "Error in workflow definition: #{ex.message}"
       ex.backtrace.each do |line|
