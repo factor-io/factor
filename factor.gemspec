@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'faye-websocket', '~> 0.7.4'
   s.add_runtime_dependency 'colored', '~> 1.2'
   s.add_runtime_dependency 'configatron', '~> 4.2.0'
-  s.add_development_dependency 'codeclimate-test-reporter', '~> 0.3.0'
+  s.add_development_dependency 'codeclimate-test-reporter', '~> 0.4.0'
   s.add_development_dependency 'rspec', '~> 3.0.0'
   s.add_development_dependency 'rake', '~> 10.3.2'
 end

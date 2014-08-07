@@ -11,7 +11,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    codeclimate-test-reporter (0.3.0)
+    codeclimate-test-reporter (0.4.0)
       simplecov (>= 0.7.1, < 1.0.0)
     colored (1.2)
     commander (4.2.0)
@@ -52,7 +52,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  codeclimate-test-reporter (~> 0.3.0)
+  codeclimate-test-reporter (~> 0.4.0)
   factor!
   rake (~> 10.3.2)
   rspec (~> 3.0.0)
