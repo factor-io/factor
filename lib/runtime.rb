@@ -46,7 +46,8 @@ module Factor
       end
     end
 
-    def listen(service_id, listener_id, params = {}, &block)
+    def listen(service_ref, params = {}, &block)
+      service_id, listener_id = service_ref.split('::')
       ws = @connectors[service_id.to_sym].listener(listener_id)
 
       handle_on_open(service_id, listener_id, 'Listener', ws, params)
@@ -98,7 +99,8 @@ module Factor
       @sockets << ws
     end
 
-    def run(service_id, action_id, params = {}, &block)
+    def run(service_ref, params = {}, &block)
+      service_id, action_id = service_ref.split('::')
       ws = @connectors[service_id.to_sym].action(action_id)
 
       handle_on_open(service_id, action_id, 'Action', ws, params)
