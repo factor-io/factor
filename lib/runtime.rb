@@ -30,8 +30,8 @@ module Factor
       end
 
       @connectors = {}
-      connectors.each do |connector_id, connector_url|
-        @connectors[connector_id] = Listener.new(connector_url)
+      flat_hash(connectors).each do |key, connector_url|
+        @connectors[key] = Listener.new(connector_url)
       end
 
       @credentials = {}
@@ -47,10 +47,14 @@ module Factor
     end
 
     def listen(service_ref, params = {}, &block)
-      service_id, listener_id = service_ref.split('::')
-      ws = @connectors[service_id.to_sym].listener(listener_id)
+      service_map = service_ref.split('::') 
+      service_id = service_map.first
+      listener_id = service_map.last
+      service_key = service_map[0..-2].map{|k| k.to_sym}
 
-      handle_on_open(service_id, listener_id, 'Listener', ws, params)
+      ws = @connectors[service_key].listener(listener_id)
+
+      handle_on_open(service_ref, 'Listener', ws, params)
 
       ws.on :close do
         error 'Listener disconnected'
@@ -68,9 +72,9 @@ module Factor
           success "Workflow '#{service_id}::#{listener_id}' triggered"
           error_handle_call(listener_response, &block)
         when 'return'
-          success "Workflow '#{service_id}::#{listener_id}' started"
+          success "Workflow '#{service_ref}' started"
         when 'fail'
-          error "Workflow '#{service_id}::#{listener_id}' failed to start"
+          error "Workflow '#{service_ref}' failed to start"
         when 'log'
           listener_response['message'] = "  #{listener_response['message']}"
           log_message(listener_response)
@@ -100,8 +104,12 @@ module Factor
     end
 
     def run(service_ref, params = {}, &block)
-      service_id, action_id = service_ref.split('::')
-      ws = @connectors[service_id.to_sym].action(action_id)
+      service_map = service_ref.split('::') 
+      service_id = service_map.first
+      action_id = service_map.last
+      service_key = service_map[0..-2].map{|k| k.to_sym}
+
+      ws = @connectors[service_key].action(action_id)
 
       handle_on_open(service_id, action_id, 'Action', ws, params)
 
@@ -114,12 +122,12 @@ module Factor
         case action_response['type']
         when 'return'
           ws.close
-          success "Action '#{service_id}::#{action_id}' responded"
+          success "Action '#{service_ref}' responded"
           error_handle_call(action_response, &block)
         when 'fail'
           ws.close
           error "  #{action_response['message']}"
-          error "Action '#{service_id}::#{action_id}' failed"
+          error "Action '#{service_ref}' failed"
         when 'log'
           action_response['message'] = "  #{action_response['message']}"
           log_message(action_response)
@@ -135,10 +143,19 @@ module Factor
 
     private
 
-    def handle_on_open(service_id, action_id, dsl_type, ws, params)
+    def flat_hash(h,f=[],g={})
+      return g.update({ f=>h }) unless h.is_a? Hash
+      h.each { |k,r| flat_hash(r,f+[k],g) }
+      g
+    end
+
+    def handle_on_open(service_ref, dsl_type, ws, params)
+      service_map = service_ref.split('::') 
+      service_id = service_map.first
+
       ws.on :open do
         params.merge!(@credentials[service_id.to_sym] || {})
-        success "#{dsl_type.capitalize} '#{service_id}::#{action_id}' called"
+        success "#{dsl_type.capitalize} '#{service_ref}' called"
         ws.send(params.to_json)
       end
     end
