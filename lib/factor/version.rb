@@ -2,5 +2,5 @@
 
 # Primary Factor.io module
 module Factor
-  VERSION = '0.5.06'
+  VERSION = '0.5.07'
 end
