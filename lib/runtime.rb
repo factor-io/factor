@@ -111,7 +111,7 @@ module Factor
 
       ws = @connectors[service_key].action(action_id)
 
-      handle_on_open(service_id, action_id, 'Action', ws, params)
+      handle_on_open(service_ref, 'Action', ws, params)
 
       ws.on :error do
         error 'Connection dropped while calling action'
