@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    factor (0.5.09)
+    factor (0.5.12)
       colored (~> 1.2)
       commander (~> 4.2.1)
       configatron (~> 4.2.0)

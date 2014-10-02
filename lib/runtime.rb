@@ -143,6 +143,43 @@ module Factor
 
     private
 
+    class DeepStruct < OpenStruct
+      def initialize(hash=nil)
+        @table = {}
+        @hash_table = {}
+
+        if hash
+          hash.each do |k,v|
+            @table[k.to_sym] = (v.is_a?(Hash) ? self.class.new(v) : v)
+            @hash_table[k.to_sym] = v
+
+            new_ostruct_member(k)
+          end
+        end
+      end
+
+      def to_h
+        @hash_table
+      end
+
+      def [](idx)
+        hash = marshal_dump
+        hash[idx.to_sym]
+      end
+    end
+
+    def simple_object_convert(item)
+      if item.is_a?(Hash)
+        DeepStruct.new(item)
+      elsif item.is_a?(Array)
+        item.map do |i|
+          simple_object_convert(i)
+        end
+      else
+        item
+      end
+    end
+
     def flat_hash(h,f=[],g={})
       return g.update({ f=>h }) unless h.is_a? Hash
       h.each { |k,r| flat_hash(r,f+[k],g) }
@@ -161,13 +198,8 @@ module Factor
     end
 
     def error_handle_call(listener_response, &block)
-      payload = if listener_response['payload'].is_a?(Hash)
-        OpenStruct.new(listener_response['payload']) 
-      else
-        listener_response['payload']
-      end
-      block.call(payload) if block
-      
+      content = simple_object_convert(listener_response['payload'])
+      block.call(content) if block
     rescue => ex
       error "Error in workflow definition: #{ex.message}"
       ex.backtrace.each do |line|
