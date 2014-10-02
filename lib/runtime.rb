@@ -161,7 +161,13 @@ module Factor
     end
 
     def error_handle_call(listener_response, &block)
-      block.call(OpenStruct.new(listener_response['payload'])) if block
+      payload = if listener_response['payload'].is_a?(Hash)
+        OpenStruct.new(listener_response['payload']) 
+      else
+        listener_response['payload']
+      end
+      block.call(payload) if block
+      
     rescue => ex
       error "Error in workflow definition: #{ex.message}"
       ex.backtrace.each do |line|
