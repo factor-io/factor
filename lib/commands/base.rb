@@ -45,13 +45,36 @@ module Factor
         load_config_data :connectors, options
       end
 
+      def save_config(options={})
+        credentials_relative_path = options[:credentials] || DEFAULT_FILENAME[:credentials]
+        credentials_absolute_path = File.expand_path(credentials_relative_path)
+        connectors_relative_path = options[:connectors] || DEFAULT_FILENAME[:connectors]
+        connectors_absolute_path = File.expand_path(connectors_relative_path)
+
+        connectors  = Hash[stringify(configatron.connectors.to_h).sort]
+        credentials = Hash[stringify(configatron.credentials.to_h).sort]
+
+        File.write(connectors_absolute_path,YAML.dump(connectors))
+        File.write(credentials_absolute_path,YAML.dump(credentials))
+      end
+
       private
+
+      def stringify(hash)
+        hash.inject({}) do |options, (key, value)|
+          options[key.to_s] = value.is_a?(Hash) ? stringify(value) : value
+          options
+        end
+      end
 
       def load_config_data(config_type, options = {})
         relative_path = options[config_type] || DEFAULT_FILENAME[config_type]
         absolute_path = File.expand_path(relative_path)
-        info message: "Loading #{config_type} from #{absolute_path}"
-        data = YAML.load(File.read(absolute_path))
+        begin
+          data = YAML.load(File.read(absolute_path))
+        rescue
+          data = {}
+        end
         configatron[config_type].configure_from_hash(data)
       rescue => ex
         exception "Couldn't load #{config_type} from #{absolute_path}", ex
