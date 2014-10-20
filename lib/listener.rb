@@ -1,6 +1,5 @@
 # encoding: UTF-8
 
-require 'rest_client'
 require 'websocket_manager'
 
 module Factor
