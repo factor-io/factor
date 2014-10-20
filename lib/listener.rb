@@ -10,10 +10,6 @@ module Factor
       @url = url
     end
 
-    def definition
-      get("#{@url}/definition")
-    end
-
     def listener(listener_id)
       listen("#{@url}/listeners/#{listener_id}")
     end
@@ -23,19 +19,6 @@ module Factor
     end
 
     private
-
-    def post(uri_path, payload)
-      content = { 'payload' => MultiJson.dump(payload) }
-      JSON.parse(RestClient.post(uri_path, content))
-    end
-
-    def get(uri_path)
-      JSON.parse(RestClient.get(uri_path))
-    end
-
-    def delete(uri_path)
-      JSON.parse(RestClient.delete(uri_path))
-    end
 
     def listen(uri_path)
       WebSocketManager.new(uri_path)
