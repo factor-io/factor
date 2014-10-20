@@ -26,6 +26,14 @@ command 'registry workflows' do |c|
   c.when_called Factor::Commands::Registry, :workflows
 end
 
+command 'registry workflows add' do |c|
+  c.syntax = 'factor registry workflow add <id>'
+  c.description = 'Get list of available workflows'
+  c.option '--credentials FILE', String, 'credentials.yml file path.'
+  c.option '--connectors FILE', String, 'connectors.yml file path'
+  c.when_called Factor::Commands::Registry, :add_workflow
+end
+
 command 'registry connectors' do |c|
   c.syntax = 'factor registry connectors'
   c.description = 'Get list of available connectors'
@@ -33,7 +41,7 @@ command 'registry connectors' do |c|
 end
 
 command 'registry connector add' do |c|
-  c.syntax = 'factor registry add <id>'
+  c.syntax = 'factor registry connector add <id>'
   c.description = 'Get list of available connectors'
   c.option '--credentials FILE', String, 'credentials.yml file path.'
   c.option '--connectors FILE', String, 'connectors.yml file path'

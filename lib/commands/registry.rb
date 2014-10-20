@@ -2,6 +2,7 @@
 
 require 'yaml'
 require 'rest-client'
+require 'erubis'
 
 require 'commands/base'
 
@@ -27,8 +28,49 @@ module Factor
       end
 
       def add_connector(args,options={})
+        setup_connector args[0].to_s
+      end
+
+      def add_workflow(args,options={})
+        list          = get_yaml_data 'https://raw.githubusercontent.com/factor-io/index/master/workflows.yml'
+        workflow_id   = args[0].to_s
+        workflow_info = list[workflow_id]
+        config_url    = workflow_info['config']
+
+        load_config(credentials:options.credentials, connectors:options.connectors)
+
+        config = get_json_data(config_url)
+
+        config['required-connectors'].each do |connector_id|
+          if configatron.credentials.to_hash[connector_id.to_sym]
+            puts "#{connector_id} already configured".green
+          else
+            setup_connector(connector_id,options)
+          end
+        end
+
+        variables = {}
+        config['variables'].each do |var_id,var_info|
+          puts var_info['description'] if var_info['description']
+          variables[var_id] = ask("#{var_info['name'].bold}#{' (optional)' if var_info['optional']}: ").to_s
+        end
+
+        template = RestClient.get(config['template'])
+
+        eruby = Erubis::Eruby.new(template)
+
+        workflow_content = eruby.result(variables)
+
+        workflow_filename = "workflow-#{workflow_id}.rb"
+        File.write(workflow_filename, workflow_content)
+
+      end
+    
+      private
+
+      def setup_connector(connector_id, options)
         list = get_yaml_data 'https://raw.githubusercontent.com/factor-io/index/master/connectors.yml'
-        connector_id = args[0].to_s
+        
         connector_info = list[connector_id]
         new_connectors = connector_info['connectors']
         required_credentials = connector_info['credentials']
@@ -50,8 +92,6 @@ module Factor
 
         save_config(credentials:options.credentials, connectors:options.connectors)
       end
-    
-      private
 
       def get_yaml_data(url)
         raw_content = RestClient.get(url)

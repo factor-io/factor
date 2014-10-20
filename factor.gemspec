@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'colored', '~> 1.2'
   s.add_runtime_dependency 'configatron', '~> 4.2.0'
   s.add_runtime_dependency 'rest-client', '~> 1.7.2'
+  s.add_runtime_dependency 'erubis', '~> 2.7.0'
   s.add_development_dependency 'codeclimate-test-reporter', '~> 0.4.1'
   s.add_development_dependency 'rspec', '~> 3.1.0'
   s.add_development_dependency 'rake', '~> 10.3.2'
