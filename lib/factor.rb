@@ -31,6 +31,7 @@ command 'registry workflows add' do |c|
   c.description = 'Get list of available workflows'
   c.option '--credentials FILE', String, 'credentials.yml file path.'
   c.option '--connectors FILE', String, 'connectors.yml file path'
+  c.option '--values \'{"api_key":"foo"}\'', String, "{}"
   c.when_called Factor::Commands::Registry, :add_workflow
 end
 
@@ -45,6 +46,7 @@ command 'registry connector add' do |c|
   c.description = 'Get list of available connectors'
   c.option '--credentials FILE', String, 'credentials.yml file path.'
   c.option '--connectors FILE', String, 'connectors.yml file path'
+  c.option '--values \'{"api_key":"foo"}\'', String, "{}"
   c.when_called Factor::Commands::Registry, :add_connector
 end
 
