@@ -11,6 +11,7 @@ Gem::Specification.new do |s|
   s.homepage      = 'https://factor.io'
   s.summary       = 'CLI to manager workflows on Factor.io'
   s.description   = 'CLI to manager workflows on Factor.io'
+  s.files         = Dir.glob('lib/**/*.rb')
 
   s.test_files    = Dir.glob("./{test,spec,features}/*.rb")
   s.executables   = ['factor']
