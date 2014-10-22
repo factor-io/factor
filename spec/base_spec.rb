@@ -87,9 +87,6 @@ describe Factor::Commands::Command do
         @command.load_config config_settings
       end
 
-      expect(output).to include('Loading credentials')
-      expect(output).to include('Loading connectors')
-
       expect(configatron.credentials.github.api_key).to eq('fake_github_key')
       expect(configatron.credentials.heroku.api_key).to eq('fake_heroku_key')
       connectors_content.keys.each do |expected_connector_key|
