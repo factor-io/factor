@@ -20,6 +20,12 @@ command 'server' do |c|
   c.when_called Factor::Commands::Workflow, :server
 end
 
+command 'cloud' do |c|
+  c.syntax = 'factor host <account id> <api key> <workflow id>'
+  c.description = 'Start the Factor.io Server using your workflows and credentials from Factor.io Cloud'
+  c.when_called Factor::Commands::Workflow, :cloud
+end
+
 command 'registry workflows' do |c|
   c.syntax = 'factor registry workflows'
   c.description = 'Get list of available workflow jumpstarts'

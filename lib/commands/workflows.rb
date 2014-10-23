@@ -23,7 +23,7 @@ module Factor
         load_config(config_settings)
         load_all_workflows(workflow_filename)
         block_until_interupt
-        log_message 'status' => 'info', 'message' => 'Good bye!'
+        info 'Good bye!'
       end
 
       private
@@ -42,13 +42,13 @@ module Factor
       end
 
       def block_until_interupt
-        log_message 'status' => 'info', 'message' => 'Ctrl-c to exit'
+        info 'Ctrl-c to exit'
         begin
           loop do
             sleep 1
           end
         rescue Interrupt
-          log_message 'status' => 'info', 'message' => 'Exiting app...'
+          info 'Exiting app...'
         ensure
           @workflows.keys.each { |filename| unload_workflow(filename) }
         end
@@ -56,9 +56,7 @@ module Factor
 
       def load_workflow(filename)
         workflow_filename = File.expand_path(filename)
-        log_message(
-          'status' => 'info',
-          'message' =>  "Loading workflow from #{workflow_filename}")
+        info "Loading workflow from #{workflow_filename}"
         begin
           workflow_definition = File.read(workflow_filename)
         rescue => ex
@@ -66,9 +64,7 @@ module Factor
           return
         end
 
-        log_message(
-          'status' => 'info',
-          'message' =>  'Setting up workflow processor')
+        @workflows[workflow_filename] = load_workflow_from_definition(workflow_definition)
         begin
           connector_settings = configatron.connectors.to_hash
           credential_settings = configatron.credentials.to_hash
@@ -81,9 +77,7 @@ module Factor
 
         @workflows[workflow_filename] = fork do
           begin
-            log_message(
-              'status' => 'info',
-              'message' => "Starting #{workflow_filename}")
+            info "Starting workflow"
             runtime.load(workflow_definition)
           rescue => ex
             exception "Couldn't load #{workflow_filename}", ex
@@ -93,9 +87,7 @@ module Factor
 
       def unload_workflow(filename)
         workflow_filename = File.expand_path(filename)
-        log_message(
-          'status' => 'info',
-          'message' =>  "Stopping #{workflow_filename}")
+        info "Stopping #{workflow_filename}"
         Process.kill('SIGINT', @workflows[workflow_filename])
       end
 
