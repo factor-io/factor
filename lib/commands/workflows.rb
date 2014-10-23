@@ -26,6 +26,71 @@ module Factor
         info 'Good bye!'
       end
 
+      def cloud(args, options)
+        account_id  = args[0]
+        api_key     = args[1]
+        workflow_id = args[2]
+        
+
+        if !api_key || !workflow_id
+          error "API Key, Worklfow ID and Acount ID are all required"
+          exit
+        end
+
+        info "Getting workflow (#{workflow_id}) from Factor.io Cloud"
+        begin
+          workflow_url = "https://factor.io/#{account_id}/workflows/#{workflow_id}.json?auth_token=#{api_key}"
+          raw_content = RestClient.get(workflow_url)
+          workflow_info = JSON.parse(raw_content)
+        rescue => ex
+          error "Couldn't retreive workflow: #{ex.message}"
+          exit
+        end
+
+        workflow_definition = workflow_info["workflow_definition"]
+
+        info "Getting credentials from Factor.io Cloud"
+        begin
+          credential_url = "https://factor.io/#{account_id}/credentials.json?auth_token=#{api_key}"
+          raw_content = RestClient.get(credential_url)
+          credential_info = JSON.parse(raw_content)
+        rescue => ex
+          error "Couldn't retreive workflow: #{ex.message}"
+          exit
+        end
+
+        credentials = {}
+        credential_info.each do |credential|
+          credentials[credential['service']] ||= {}
+          credentials[credential['service']][credential['name']] = credential['value']
+        end
+
+        configatron[:credentials].configure_from_hash(credentials)
+
+        info "Getting connector settings from Factor.io Index Server"
+        begin
+          connectors_url = 'https://raw.githubusercontent.com/factor-io/index/master/connectors.yml'
+          raw_content = RestClient.get(connectors_url)
+          connectors_info = YAML.parse(raw_content).to_ruby
+        rescue
+          error "Couldn't retreive connectors info"
+          exit
+        end
+
+        connectors = {}
+        connectors_info.each do |connector_id, connector_info|
+          connectors[connector_id] = connector_info['connectors']
+        end
+
+        configatron[:connectors].configure_from_hash(connectors)
+
+        load_workflow_from_definition(workflow_definition)
+
+        block_until_interupt
+
+        info 'Good bye!'
+      end
+
       private
 
       def load_all_workflows(workflow_filename)
@@ -65,6 +130,10 @@ module Factor
         end
 
         @workflows[workflow_filename] = load_workflow_from_definition(workflow_definition)
+      end
+
+      def load_workflow_from_definition(workflow_definition)
+        info "Setting up workflow processor"
         begin
           connector_settings = configatron.connectors.to_hash
           credential_settings = configatron.credentials.to_hash
@@ -75,14 +144,16 @@ module Factor
           exception message, ex
         end
 
-        @workflows[workflow_filename] = fork do
+        workflow_thread = fork do
           begin
             info "Starting workflow"
             runtime.load(workflow_definition)
           rescue => ex
-            exception "Couldn't load #{workflow_filename}", ex
+            exception "Couldn't workflow", ex
           end
         end
+
+        workflow_thread
       end
 
       def unload_workflow(filename)
