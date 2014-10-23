@@ -28,11 +28,10 @@ module Factor
 
       def cloud(args, options)
         account_id  = args[0]
-        api_key     = args[1]
-        workflow_id = args[2]
-        
+        workflow_id = args[1]
+        api_key     = args[2]
 
-        if !api_key || !workflow_id
+        if !api_key || !workflow_id || !account_id
           error "API Key, Worklfow ID and Acount ID are all required"
           exit
         end
