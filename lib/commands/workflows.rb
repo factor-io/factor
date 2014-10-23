@@ -83,7 +83,7 @@ module Factor
 
         configatron[:connectors].configure_from_hash(connectors)
 
-        load_workflow_from_definition(workflow_definition)
+        @workflows[workflow_id] = load_workflow_from_definition(workflow_definition)
 
         block_until_interupt
 
@@ -101,7 +101,7 @@ module Factor
         elsif file_list.count == 0
           error 'No workflows in this directory to run'
         else
-          file_list.each { |filename| load_workflow(filename) }
+          file_list.each { |filename| load_workflow(File.expand_path(filename)) }
         end
       end
 
@@ -114,12 +114,12 @@ module Factor
         rescue Interrupt
           info 'Exiting app...'
         ensure
-          @workflows.keys.each { |filename| unload_workflow(filename) }
+          @workflows.keys.each { |workflow_id| unload_workflow(workflow_id) }
         end
       end
 
       def load_workflow(filename)
-        workflow_filename = File.expand_path(filename)
+        # workflow_filename = File.expand_path(filename)
         info "Loading workflow from #{workflow_filename}"
         begin
           workflow_definition = File.read(workflow_filename)
@@ -155,10 +155,9 @@ module Factor
         workflow_thread
       end
 
-      def unload_workflow(filename)
-        workflow_filename = File.expand_path(filename)
-        info "Stopping #{workflow_filename}"
-        Process.kill('SIGINT', @workflows[workflow_filename])
+      def unload_workflow(workflow_id)
+        info "Stopping #{workflow_id}"
+        Process.kill('SIGINT', @workflows[workflow_id])
       end
 
       def log_message(message_info)
