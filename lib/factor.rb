@@ -23,6 +23,7 @@ end
 command 'cloud' do |c|
   c.syntax = 'factor host <account id> <workflow id> <api key>'
   c.description = 'Start the Factor.io Server using your workflows and credentials from Factor.io Cloud'
+  c.option '--index URL', String, 'Use non-default Index server to get list of available credentials'
   c.when_called Factor::Commands::Workflow, :cloud
 end
 

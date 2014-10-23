@@ -68,7 +68,8 @@ module Factor
 
         info "Getting connector settings from Factor.io Index Server"
         begin
-          connectors_url = 'https://raw.githubusercontent.com/factor-io/index/master/connectors.yml'
+          connectors_url = options.index
+          connectors_url ||= 'https://raw.githubusercontent.com/factor-io/index/master/connectors.yml'
           raw_content = RestClient.get(connectors_url)
           connectors_info = YAML.parse(raw_content).to_ruby
         rescue
