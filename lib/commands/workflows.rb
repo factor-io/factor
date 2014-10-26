@@ -52,16 +52,10 @@ module Factor
         begin
           credential_url = "https://factor.io/#{account_id}/credentials.json?auth_token=#{api_key}"
           raw_content = RestClient.get(credential_url)
-          credential_info = JSON.parse(raw_content)
+          credentials = JSON.parse(raw_content)
         rescue => ex
           error "Couldn't retreive workflow: #{ex.message}"
           exit
-        end
-
-        credentials = {}
-        credential_info.each do |credential|
-          credentials[credential['service']] ||= {}
-          credentials[credential['service']][credential['name']] = credential['value']
         end
 
         configatron[:credentials].configure_from_hash(credentials)
