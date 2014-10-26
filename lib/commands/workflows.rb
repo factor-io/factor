@@ -60,20 +60,19 @@ module Factor
 
         configatron[:credentials].configure_from_hash(credentials)
 
-        info "Getting connector settings from Factor.io Index Server"
-        begin
-          connectors_url = options.index
-          connectors_url ||= 'https://raw.githubusercontent.com/factor-io/index/master/connectors.yml'
-          raw_content = RestClient.get(connectors_url)
-          connectors_info = YAML.parse(raw_content).to_ruby
-        rescue
-          error "Couldn't retreive connectors info"
-          exit
-        end
-
+        info "Getting connectors from Factor.io Cloud"
         connectors = {}
-        connectors_info.each do |connector_id, connector_info|
-          connectors[connector_id] = connector_info['connectors']
+        begin
+          connectors_url = "#{host}/#{account_id}/connectors.json?auth_token=#{api_key}"
+          raw_content = RestClient.get(connectors_url)
+          raw_connectors = JSON.parse(raw_content)
+
+          raw_connectors.each do |connector_id,connector_info|
+            connectors[connector_id] = connector_info['connectors'].values.first
+          end
+        rescue => ex
+          error "Couldn't retreive workflow: #{ex.message}"
+          exit
         end
 
         configatron[:connectors].configure_from_hash(connectors)
