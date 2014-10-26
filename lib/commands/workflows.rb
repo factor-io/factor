@@ -30,6 +30,7 @@ module Factor
         account_id  = args[0]
         workflow_id = args[1]
         api_key     = args[2]
+        host        = (options.host || "https://factor.io").sub(/(\/)+$/,'')
 
         if !api_key || !workflow_id || !account_id
           error "API Key, Worklfow ID and Acount ID are all required"
@@ -38,7 +39,7 @@ module Factor
 
         info "Getting workflow (#{workflow_id}) from Factor.io Cloud"
         begin
-          workflow_url = "https://factor.io/#{account_id}/workflows/#{workflow_id}.json?auth_token=#{api_key}"
+          workflow_url = "#{host}/#{account_id}/workflows/#{workflow_id}.json?auth_token=#{api_key}"
           raw_content = RestClient.get(workflow_url)
           workflow_info = JSON.parse(raw_content)
         rescue => ex
@@ -50,7 +51,7 @@ module Factor
 
         info "Getting credentials from Factor.io Cloud"
         begin
-          credential_url = "https://factor.io/#{account_id}/credentials.json?auth_token=#{api_key}"
+          credential_url = "#{host}/#{account_id}/credentials.json?auth_token=#{api_key}"
           raw_content = RestClient.get(credential_url)
           credentials = JSON.parse(raw_content)
         rescue => ex
