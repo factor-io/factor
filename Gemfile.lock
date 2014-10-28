@@ -4,7 +4,7 @@ PATH
     factor (0.6.1)
       colored (~> 1.2)
       commander (~> 4.2.1)
-      configatron (~> 4.2.0)
+      configatron (~> 4.2.1)
       erubis (~> 2.7.0)
       faye-websocket (~> 0.7.5)
       rest-client (~> 1.7.2)
