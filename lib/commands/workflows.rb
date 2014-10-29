@@ -27,9 +27,7 @@ module Factor
       end
 
       def cloud(args, options)
-        account_id  = args[0]
-        workflow_id = args[1]
-        api_key     = args[2]
+        account_id, workflow_id, api_key = args
         host        = (options.host || "https://factor.io").sub(/(\/)+$/,'')
 
         if !api_key || !workflow_id || !account_id
