@@ -45,7 +45,7 @@ module Factor
           exit
         end
 
-        workflow_definition = workflow_info["workflow_definition"]
+        workflow_definition = workflow_info["definition"]
 
         info "Getting credentials from Factor.io Cloud"
         begin
