@@ -111,7 +111,7 @@ module Factor
         end
       end
 
-      def load_workflow(filename)
+      def load_workflow(workflow_filename)
         # workflow_filename = File.expand_path(filename)
         info "Loading workflow from #{workflow_filename}"
         begin
