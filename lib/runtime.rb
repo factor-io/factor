@@ -13,6 +13,20 @@ require 'commands/base'
 
 module Factor
   # Runtime class is the magic of the server
+
+  class ExecHandler
+    attr_accessor :params, :service, :fail_block
+
+    def initialize(service = nil, params = {})
+      @service = service
+      @params = params
+    end
+
+    def on_fail(&block)
+      @fail_block = block
+    end
+  end
+
   class Runtime
     attr_accessor :logger, :name, :description, :id, :instance_id, :connectors, :credentials
 
@@ -52,6 +66,8 @@ module Factor
       listener_id = service_map.last
       service_key = service_map[0..-2].map{|k| k.to_sym}
 
+      e = ExecHandler.new(service_ref, params)
+
       ws = @connectors[service_key].listener(listener_id)
 
       handle_on_open(service_ref, 'Listener', ws, params)
@@ -74,6 +90,7 @@ module Factor
         when 'return'
           success "Workflow '#{service_ref}' started"
         when 'fail'
+          e.fail_block.call(action_response) if e.fail_block
           error "Workflow '#{service_ref}' failed to start"
         when 'log'
           listener_response['message'] = "  #{listener_response['message']}"
@@ -101,6 +118,8 @@ module Factor
       ws.open
 
       @sockets << ws
+      
+      e
     end
 
     def run(service_ref, params = {}, &block)
@@ -110,6 +129,8 @@ module Factor
       service_key = service_map[0..-2].map{|k| k.to_sym}
 
       ws = @connectors[service_key].action(action_id)
+
+      e = ExecHandler.new(service_ref, params)
 
       handle_on_open(service_ref, 'Action', ws, params)
 
@@ -125,6 +146,7 @@ module Factor
           success "Action '#{service_ref}' responded"
           error_handle_call(action_response, &block)
         when 'fail'
+          e.fail_block.call(action_response) if e.fail_block
           ws.close
           error "  #{action_response['message']}"
           error "Action '#{service_ref}' failed"
@@ -139,6 +161,7 @@ module Factor
       ws.open
 
       @sockets << ws
+      e
     end
 
     private
