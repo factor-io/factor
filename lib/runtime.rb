@@ -122,45 +122,62 @@ module Factor
       e
     end
 
+    def workflow(service_ref, &block)
+      service_map = service_ref.split('::')
+      @workflows ||= {}
+      @workflows[service_map] = block
+    end
+
     def run(service_ref, params = {}, &block)
       service_map = service_ref.split('::') 
       service_id = service_map.first
-      action_id = service_map.last
-      service_key = service_map[0..-2].map{|k| k.to_sym}
-
-      ws = @connectors[service_key].action(action_id)
+      action_id = service_map.last      
 
       e = ExecHandler.new(service_ref, params)
 
-      handle_on_open(service_ref, 'Action', ws, params)
-
-      ws.on :error do
-        error 'Connection dropped while calling action'
-      end
-
-      ws.on :message do |event|
-        action_response = JSON.parse(event.data)
-        case action_response['type']
-        when 'return'
-          ws.close
-          success "Action '#{service_ref}' responded"
-          error_handle_call(action_response, &block)
-        when 'fail'
-          e.fail_block.call(action_response) if e.fail_block
-          ws.close
-          error "  #{action_response['message']}"
-          error "Action '#{service_ref}' failed"
-        when 'log'
-          action_response['message'] = "  #{action_response['message']}"
-          log_message(action_response)
+      if service_id == 'workflow'
+        workflow = @workflows[service_map[1..-1]]
+        if workflow
+          success "Workflow '#{service_map[1..-1].join('::')}' starting"
+          content = simple_object_convert(params)
+          workflow.call(content)
+          success "Workflow '#{service_map[1..-1].join('::')}' started"
         else
-          error "Unknown action response: #{action_response}"
         end
+      else
+        service_key = service_map[0..-2].map{|k| k.to_sym}
+        ws = @connectors[service_key].action(action_id)
+
+        handle_on_open(service_ref, 'Action', ws, params)
+
+        ws.on :error do
+          error 'Connection dropped while calling action'
+        end
+
+        ws.on :message do |event|
+          action_response = JSON.parse(event.data)
+          case action_response['type']
+          when 'return'
+            ws.close
+            success "Action '#{service_ref}' responded"
+            error_handle_call(action_response, &block)
+          when 'fail'
+            e.fail_block.call(action_response) if e.fail_block
+            ws.close
+            error "  #{action_response['message']}"
+            error "Action '#{service_ref}' failed"
+          when 'log'
+            action_response['message'] = "  #{action_response['message']}"
+            log_message(action_response)
+          else
+            error "Unknown action response: #{action_response}"
+          end
+        end
+
+        ws.open
+
+        @sockets << ws
       end
-
-      ws.open
-
-      @sockets << ws
       e
     end
 
