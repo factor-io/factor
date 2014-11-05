@@ -33,6 +33,7 @@ module Factor
     def initialize(connectors, credentials)
       @workflow_spec  = {}
       @sockets        = []
+      @workflows      = {}
       @instance_id    = SecureRandom.hex(3)
       @reconnect      = true
 
@@ -68,56 +69,63 @@ module Factor
 
       e = ExecHandler.new(service_ref, params)
 
-      ws = @connectors[service_key].listener(listener_id)
+      service = @connectors[service_key]
 
-      handle_on_open(service_ref, 'Listener', ws, params)
+      if !service
+        error "Listener '#{service_ref}' not found"
+        e.fail_block.call({}) if e.fail_block
+      else
+        ws = service.listener(listener_id)
 
-      ws.on :close do
-        error 'Listener disconnected'
-        if @reconnect
-          warn 'Reconnecting...'
-          sleep 3
-          ws.open
+        handle_on_open(service_ref, 'Listener', ws, params)
+
+        ws.on :close do
+          error 'Listener disconnected'
+          if @reconnect
+            warn 'Reconnecting...'
+            sleep 3
+            ws.open
+          end
         end
-      end
 
-      ws.on :message do |event|
-        listener_response = JSON.parse(event.data)
-        case listener_response['type']
-        when'start_workflow'
-          success "Workflow '#{service_id}::#{listener_id}' triggered"
-          error_handle_call(listener_response, &block)
-        when 'return'
-          success "Workflow '#{service_ref}' started"
-        when 'fail'
-          e.fail_block.call(action_response) if e.fail_block
-          error "Workflow '#{service_ref}' failed to start"
-        when 'log'
-          listener_response['message'] = "  #{listener_response['message']}"
-          log_message(listener_response)
-        else
-          error "Unknown listener response: #{listener_response}"
+        ws.on :message do |event|
+          listener_response = JSON.parse(event.data)
+          case listener_response['type']
+          when'start_workflow'
+            success "Workflow '#{service_id}::#{listener_id}' triggered"
+            error_handle_call(listener_response, &block)
+          when 'return'
+            success "Workflow '#{service_ref}' started"
+          when 'fail'
+            e.fail_block.call(action_response) if e.fail_block
+            error "Workflow '#{service_ref}' failed to start"
+          when 'log'
+            listener_response['message'] = "  #{listener_response['message']}"
+            log_message(listener_response)
+          else
+            error "Unknown listener response: #{listener_response}"
+          end
         end
-      end
 
-      ws.on :retry do |event|
-        warn event[:message]
-      end
-
-      ws.on :error do |event|
-        err = 'Error during WebSocket handshake: Unexpected response code: 401'
-        if event.message == err
-          error "Sorry but you don't have access to this listener,
-            | either because your token is invalid or your plan doesn't
-            | support this listener"
-        else
-          error 'Failure in WebSocket connection to connector service'
+        ws.on :retry do |event|
+          warn event[:message]
         end
+
+        ws.on :error do |event|
+          err = 'Error during WebSocket handshake: Unexpected response code: 401'
+          if event.message == err
+            error "Sorry but you don't have access to this listener,
+              | either because your token is invalid or your plan doesn't
+              | support this listener"
+          else
+            error 'Failure in WebSocket connection to connector service'
+          end
+        end
+
+        ws.open
+
+        @sockets << ws
       end
-
-      ws.open
-
-      @sockets << ws
       
       e
     end
@@ -136,47 +144,54 @@ module Factor
       e = ExecHandler.new(service_ref, params)
 
       if service_id == 'workflow'
-        workflow = @workflows[service_map[1..-1]]
+        workflow_index = service_map[1..-1]
+        workflow_id = workflow_index.join('::')
+        workflow = @workflows[workflow_index]
         if workflow
-          success "Workflow '#{service_map[1..-1].join('::')}' starting"
+          success "Workflow '#{workflow_id}' starting"
           content = simple_object_convert(params)
           workflow.call(content)
-          success "Workflow '#{service_map[1..-1].join('::')}' started"
+          success "Workflow '#{workflow_id}' started"
         else
+          error "Workflow '#{workflow_id}' not found"
+          e.fail_block.call({}) if e.fail_block
         end
       else
         service_key = service_map[0..-2].map{|k| k.to_sym}
-        ws = @connectors[service_key].action(action_id)
+        service = @connectors[service_key]
+        if service
+          ws = service.action(action_id)
 
-        handle_on_open(service_ref, 'Action', ws, params)
+          handle_on_open(service_ref, 'Action', ws, params)
 
-        ws.on :error do
-          error 'Connection dropped while calling action'
-        end
-
-        ws.on :message do |event|
-          action_response = JSON.parse(event.data)
-          case action_response['type']
-          when 'return'
-            ws.close
-            success "Action '#{service_ref}' responded"
-            error_handle_call(action_response, &block)
-          when 'fail'
-            e.fail_block.call(action_response) if e.fail_block
-            ws.close
-            error "  #{action_response['message']}"
-            error "Action '#{service_ref}' failed"
-          when 'log'
-            action_response['message'] = "  #{action_response['message']}"
-            log_message(action_response)
-          else
-            error "Unknown action response: #{action_response}"
+          ws.on :error do
+            error 'Connection dropped while calling action'
           end
+
+          ws.on :message do |event|
+            action_response = JSON.parse(event.data)
+            case action_response['type']
+            when 'return'
+              ws.close
+              success "Action '#{service_ref}' responded"
+              error_handle_call(action_response, &block)
+            when 'fail'
+              e.fail_block.call(action_response) if e.fail_block
+              ws.close
+              error "  #{action_response['message']}"
+              error "Action '#{service_ref}' failed"
+            when 'log'
+              action_response['message'] = "  #{action_response['message']}"
+              log_message(action_response)
+            else
+              error "Unknown action response: #{action_response}"
+            end
+          end
+
+          ws.open
+
+          @sockets << ws
         end
-
-        ws.open
-
-        @sockets << ws
       end
       e
     end
