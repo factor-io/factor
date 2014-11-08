@@ -28,17 +28,18 @@ module Factor
   end
 
   class Runtime
-    attr_accessor :logger, :name, :description, :id, :instance_id, :connectors, :credentials
+    attr_accessor :name, :description, :id, :instance_id, :connectors, :credentials
 
-    def initialize(connectors, credentials)
+    def initialize(connectors, credentials, options={})
       @workflow_spec  = {}
       @sockets        = []
       @workflows      = {}
       @instance_id    = SecureRandom.hex(3)
       @reconnect      = true
+      @logger         = options[:logger] if options[:logger]
 
       trap 'SIGINT' do
-        info "Exiting '#{@instance_id}'"
+        @logger.info "Exiting '#{@instance_id}'"
         @reconnect = false
         @sockets.each { |s| s.close }
         exit
@@ -72,7 +73,7 @@ module Factor
       service = @connectors[service_key]
 
       if !service
-        error "Listener '#{service_ref}' not found"
+        @logger.error "Listener '#{service_ref}' not found"
         e.fail_block.call({}) if e.fail_block
       else
         ws = service.listener(listener_id)
@@ -80,9 +81,9 @@ module Factor
         handle_on_open(service_ref, 'Listener', ws, params)
 
         ws.on :close do
-          error 'Listener disconnected'
+          @logger.error 'Listener disconnected'
           if @reconnect
-            warn 'Reconnecting...'
+            @logger.warn 'Reconnecting...'
             sleep 3
             ws.open
           end
@@ -92,33 +93,33 @@ module Factor
           listener_response = JSON.parse(event.data)
           case listener_response['type']
           when'start_workflow'
-            success "Workflow '#{service_id}::#{listener_id}' triggered"
+            @logger.success "Workflow '#{service_id}::#{listener_id}' triggered"
             error_handle_call(listener_response, &block)
           when 'return'
-            success "Workflow '#{service_ref}' started"
+            @logger.success "Workflow '#{service_ref}' started"
           when 'fail'
             e.fail_block.call(action_response) if e.fail_block
-            error "Workflow '#{service_ref}' failed to start"
+            @logger.error "Workflow '#{service_ref}' failed to start"
           when 'log'
             listener_response['message'] = "  #{listener_response['message']}"
-            log_message(listener_response)
+            @logger.log listener_response
           else
-            error "Unknown listener response: #{listener_response}"
+            @logger.error "Unknown listener response: #{listener_response}"
           end
         end
 
         ws.on :retry do |event|
-          warn event[:message]
+          @logger.warn event[:message]
         end
 
         ws.on :error do |event|
           err = 'Error during WebSocket handshake: Unexpected response code: 401'
           if event.message == err
-            error "Sorry but you don't have access to this listener,
+            @logger.error "Sorry but you don't have access to this listener,
               | either because your token is invalid or your plan doesn't
               | support this listener"
           else
-            error 'Failure in WebSocket connection to connector service'
+            @logger.error 'Failure in WebSocket connection to connector service'
           end
         end
 
@@ -148,12 +149,12 @@ module Factor
         workflow_id = workflow_index.join('::')
         workflow = @workflows[workflow_index]
         if workflow
-          success "Workflow '#{workflow_id}' starting"
+          @logger.success "Workflow '#{workflow_id}' starting"
           content = simple_object_convert(params)
           workflow.call(content)
-          success "Workflow '#{workflow_id}' started"
+          @logger.success "Workflow '#{workflow_id}' started"
         else
-          error "Workflow '#{workflow_id}' not found"
+          @logger.error "Workflow '#{workflow_id}' not found"
           e.fail_block.call({}) if e.fail_block
         end
       else
@@ -165,7 +166,7 @@ module Factor
           handle_on_open(service_ref, 'Action', ws, params)
 
           ws.on :error do
-            error 'Connection dropped while calling action'
+            @logger.error 'Connection dropped while calling action'
           end
 
           ws.on :message do |event|
@@ -173,18 +174,18 @@ module Factor
             case action_response['type']
             when 'return'
               ws.close
-              success "Action '#{service_ref}' responded"
+              @logger.success "Action '#{service_ref}' responded"
               error_handle_call(action_response, &block)
             when 'fail'
               e.fail_block.call(action_response) if e.fail_block
               ws.close
-              error "  #{action_response['message']}"
-              error "Action '#{service_ref}' failed"
+              @logger.error "  #{action_response['message']}"
+              @logger.error "Action '#{service_ref}' failed"
             when 'log'
               action_response['message'] = "  #{action_response['message']}"
-              log_message(action_response)
+              @logger.log action_response
             else
-              error "Unknown action response: #{action_response}"
+              @logger.error "Unknown action response: #{action_response}"
             end
           end
 
@@ -194,6 +195,18 @@ module Factor
         end
       end
       e
+    end
+
+    def info(message)
+      @logger.info message
+    end
+
+    def warn(message)
+      @logger.warn message
+    end
+
+    def error(message)
+      @logger.error message
     end
 
     private
@@ -247,7 +260,7 @@ module Factor
 
       ws.on :open do
         params.merge!(@credentials[service_id.to_sym] || {})
-        success "#{dsl_type.capitalize} '#{service_ref}' called"
+        @logger.success "#{dsl_type.capitalize} '#{service_ref}' called"
         ws.send(params.to_json)
       end
     end
@@ -256,32 +269,8 @@ module Factor
       content = simple_object_convert(listener_response['payload'])
       block.call(content) if block
     rescue => ex
-      error "Error in workflow definition: #{ex.message}"
-      ex.backtrace.each do |line|
-        error "  #{line}"
-      end
+      @logger.error "Error in workflow definition: #{ex.message}", exception: ex
     end
 
-    def success(msg)
-      log_message('type' => 'log', 'status' => 'success', 'message' => msg)
-    end
-
-    def warn(msg)
-      log_message('type' => 'log', 'status' => 'warn', 'message' => msg)
-    end
-
-    def error(msg)
-      log_message('type' => 'log', 'status' => 'error', 'message' => msg)
-    end
-
-    def info(msg)
-      log_message('type' => 'log', 'status' => 'info', 'message' => msg)
-    end
-
-    def log_message(message_info)
-      message_info['instance_id'] = @instance_id
-      message_info['workflow_id'] = @id
-      @logger.call(message_info) if @logger
-    end
   end
 end

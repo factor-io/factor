@@ -18,7 +18,7 @@ describe Factor::Commands::Command do
 
         test_string = 'Hello World'
         output = capture_stdout do
-          @command.method(method_name.to_sym).call message: test_string
+          @command.logger.method(method_name.to_sym).call message: test_string
         end
 
         expect(output).to include(test_string)
@@ -36,7 +36,7 @@ describe Factor::Commands::Command do
         begin
           fail ArgumentError, exception_string
         rescue => ex
-          @command.exception test_string, ex
+          @command.logger.error message: test_string, exception:ex
         end
       end
 

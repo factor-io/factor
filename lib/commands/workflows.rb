@@ -11,6 +11,7 @@ module Factor
     class Workflow < Factor::Commands::Command
       def initialize
         @workflows = {}
+        super
       end
 
       def server(_args, options)
@@ -23,7 +24,7 @@ module Factor
         load_config(config_settings)
         load_all_workflows(workflow_filename)
         block_until_interupt
-        info 'Good bye!'
+        logger.info 'Good bye!'
       end
 
       def cloud(args, options)
@@ -31,35 +32,35 @@ module Factor
         host        = (options.host || "https://factor.io").sub(/(\/)+$/,'')
 
         if !api_key || !workflow_id || !account_id
-          error "API Key, Worklfow ID and Acount ID are all required"
+          logger.error "API Key, Worklfow ID and Acount ID are all required"
           exit
         end
 
-        info "Getting workflow (#{workflow_id}) from Factor.io Cloud"
+        logger.info "Getting workflow (#{workflow_id}) from Factor.io Cloud"
         begin
           workflow_url = "#{host}/#{account_id}/workflows/#{workflow_id}.json?auth_token=#{api_key}"
           raw_content = RestClient.get(workflow_url)
           workflow_info = JSON.parse(raw_content)
         rescue => ex
-          error "Couldn't retreive workflow: #{ex.message}"
+          logger.error "Couldn't retreive workflow: #{ex.message}"
           exit
         end
 
         workflow_definition = workflow_info["definition"]
 
-        info "Getting credentials from Factor.io Cloud"
+        logger.info "Getting credentials from Factor.io Cloud"
         begin
           credential_url = "#{host}/#{account_id}/credentials.json?auth_token=#{api_key}"
           raw_content = RestClient.get(credential_url)
           credentials = JSON.parse(raw_content)
         rescue => ex
-          error "Couldn't retreive workflow: #{ex.message}"
+          logger.error "Couldn't retreive workflow: #{ex.message}"
           exit
         end
 
         configatron[:credentials].configure_from_hash(credentials)
 
-        info "Getting connectors from Factor.io Cloud"
+        logger.info "Getting connectors from Factor.io Cloud"
         connectors = {}
         begin
           connectors_url = "#{host}/#{account_id}/connectors.json?auth_token=#{api_key}"
@@ -70,7 +71,7 @@ module Factor
             connectors[connector_id] = connector_info['connectors'].values.first
           end
         rescue => ex
-          error "Couldn't retreive workflow: #{ex.message}"
+          logger.error "Couldn't retreive workflow: #{ex.message}"
           exit
         end
 
@@ -80,7 +81,7 @@ module Factor
 
         block_until_interupt
 
-        info 'Good bye!'
+        logger.info 'Good bye!'
       end
 
       private
@@ -90,22 +91,22 @@ module Factor
         glob = "#{workflow_filename}#{glob_ending}*.rb"
         file_list = Dir.glob(glob)
         if !file_list.all? { |file| File.file?(file) }
-          error "#{workflow_filename} is neither a file or directory"
+          logger.error "#{workflow_filename} is neither a file or directory"
         elsif file_list.count == 0
-          error 'No workflows in this directory to run'
+          logger.error 'No workflows in this directory to run'
         else
           file_list.each { |filename| load_workflow(File.expand_path(filename)) }
         end
       end
 
       def block_until_interupt
-        info 'Ctrl-c to exit'
+        logger.info 'Ctrl-c to exit'
         begin
           loop do
             sleep 1
           end
         rescue Interrupt
-          info 'Exiting app...'
+          logger.info 'Exiting app...'
         ensure
           @workflows.keys.each { |workflow_id| unload_workflow(workflow_id) }
         end
@@ -113,11 +114,11 @@ module Factor
 
       def load_workflow(workflow_filename)
         # workflow_filename = File.expand_path(filename)
-        info "Loading workflow from #{workflow_filename}"
+        logger.info "Loading workflow from #{workflow_filename}"
         begin
           workflow_definition = File.read(workflow_filename)
         rescue => ex
-          exception "Couldn't read file #{workflow_filename}", ex
+          logger.error "Couldn't read file #{workflow_filename}", exception:ex
           return
         end
 
@@ -125,23 +126,22 @@ module Factor
       end
 
       def load_workflow_from_definition(workflow_definition)
-        info "Setting up workflow processor"
+        logger.info "Setting up workflow processor"
         begin
           connector_settings = configatron.connectors.to_hash
           credential_settings = configatron.credentials.to_hash
-          runtime = Runtime.new(connector_settings, credential_settings)
-          runtime.logger = method(:log_message)
+          runtime = Runtime.new(connector_settings, credential_settings, logger: logger)
         rescue => ex
-          message = "Couldn't setup workflow process for #{workflow_filename}"
-          exception message, ex
+          message = "Couldn't setup workflow process"
+          logger.error message:message, exception:ex
         end
 
         workflow_thread = fork do
           begin
-            info "Starting workflow"
+            logger.info "Starting workflow"
             runtime.load(workflow_definition)
           rescue => ex
-            exception "Couldn't workflow", ex
+            logger.error message: "Couldn't workflow", exception: ex
           end
         end
 
@@ -149,17 +149,8 @@ module Factor
       end
 
       def unload_workflow(workflow_id)
-        info "Stopping #{workflow_id}"
+        logger.info "Stopping #{workflow_id}"
         Process.kill('SIGINT', @workflows[workflow_id])
-      end
-
-      def log_message(message_info)
-        case message_info['status']
-        when 'info' then info message_info
-        when 'success' then success message_info
-        when 'warn' then warn message_info
-        else error message_info
-        end
       end
     end
   end
