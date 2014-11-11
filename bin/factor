@@ -1,4 +1,4 @@
 #!/usr/bin/env ruby
 # -*- mode: ruby -*-
 
-require File.expand_path('../../lib/factor', __FILE__)
+require File.expand_path('../../lib/commands', __FILE__)
