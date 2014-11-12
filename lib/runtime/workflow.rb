@@ -71,7 +71,7 @@ module Factor
         caller = Factor::Runtime::ServiceCaller.new(connector_url)
 
         caller.on :close do
-          error "Listener '#{service_ref}'  disconnected"
+          error "Listener '#{service_ref}' disconnected"
         end
 
         caller.on :open do
