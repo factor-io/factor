@@ -1,4 +1,5 @@
 require 'websocket_manager'
+require 'eventmachine'
 
 module Factor
   module Runtime
@@ -16,6 +17,10 @@ module Factor
         call("#{@url}/actions/#{action_id}", params)
       end
 
+      def close
+        @ws.close
+      end
+
       def on(event, &block)
         @subscribers ||= {}
         @subscribers[event.to_sym] ||= []
@@ -25,28 +30,28 @@ module Factor
       private
 
       def call(url, params={})
-        ws = Factor::WebSocketManager.new(url)
+        @ws = Factor::WebSocketManager.new(url)
 
-        ws.on :open do
+        @ws.on :open do
           notify :open
         end
 
-        ws.on :close do
+        @ws.on :close do
           notify :close
         end
 
-        ws.on :error do
+        @ws.on :error do
           notify :fail, message: 'Connection dropped while calling action'
         end
 
-        ws.on :message do |event|
+        @ws.on :message do |event|
           action_response = JSON.parse(event.data)
           case action_response['type']
           when 'return'
-            ws.close
+            @ws.close
             notify :return, action_response['payload']
           when 'fail'
-            ws.close
+            @ws.close
             notify :log, status:'error', message: "  #{action_response['message']}"
             notify :fail
           when 'log'
@@ -59,14 +64,14 @@ module Factor
           end
         end
 
-        ws.open
-        ws.send(params)
+        @ws.open
+        @ws.send(params)
       end
 
       def notify(event, params={})
         if @subscribers[event]
           @subscribers[event].each do |block|
-            block.call(params)
+            EM.next_tick { block.call(params) }
           end
         end
       end

@@ -6,7 +6,6 @@ require 'eventmachine'
 require 'uri'
 require 'faye/websocket'
 
-require 'listener'
 require 'commands/base'
 require 'common/deep_struct'
 require 'runtime/service_caller'
@@ -32,23 +31,12 @@ module Factor
 
     def initialize(connectors, credentials, options={})
       @workflow_spec  = {}
-      @sockets        = []
+      @callers        = []
       @workflows      = {}
       @instance_id    = SecureRandom.hex(3)
       @reconnect      = true
       @logger         = options[:logger] if options[:logger]
 
-      trap 'SIGINT' do
-        @logger.info "Exiting '#{@instance_id}'"
-        @reconnect = false
-        @sockets.each { |s| s.close }
-        exit
-      end
-
-      # @connectors = {}
-      # Factor::Common.flat_hash(connectors).each do |key, connector_url|
-      #   @connectors[key] = Listener.new(connector_url)
-      # end
       @connectors = Factor::Common.flat_hash(connectors)
 
       @credentials = {}
@@ -58,8 +46,11 @@ module Factor
     end
 
     def load(workflow_definition)
-      EM.run do
-        instance_eval(workflow_definition)
+      begin
+        EM.run do
+          instance_eval(workflow_definition)
+        end
+      rescue Interrupt
       end
     end
 
@@ -71,64 +62,51 @@ module Factor
 
       e = ExecHandler.new(service_ref, params)
 
-      service = @connectors[service_key]
+      connector_url = @connectors[service_key]
 
-      if !service
-        @logger.error "Listener '#{service_ref}' not found"
+      if !connector_url
+        error "Listener '#{service_ref}' not found"
         e.fail_block.call({}) if e.fail_block
       else
-        ws = service.listener(listener_id)
+        caller = Factor::Runtime::ServiceCaller.new(connector_url)
 
-        handle_on_open(service_ref, 'Listener', ws, params)
-
-        ws.on :close do
-          @logger.error 'Listener disconnected'
-          if @reconnect
-            @logger.warn 'Reconnecting...'
-            sleep 3
-            ws.open
-          end
+        caller.on :close do
+          error "Listener '#{service_ref}'  disconnected"
         end
 
-        ws.on :message do |event|
-          listener_response = JSON.parse(event.data)
-          case listener_response['type']
-          when'start_workflow'
-            @logger.success "Workflow '#{service_id}::#{listener_id}' triggered"
-            error_handle_call(listener_response, &block)
-          when 'return'
-            @logger.success "Workflow '#{service_ref}' started"
-          when 'fail'
-            e.fail_block.call(action_response) if e.fail_block
-            @logger.error "Workflow '#{service_ref}' failed to start"
-          when 'log'
-            listener_response['message'] = "  #{listener_response['message']}"
-            @logger.log listener_response
-          else
-            @logger.error "Unknown listener response: #{listener_response}"
-          end
+        caller.on :open do
+          info "Listener '#{service_ref}' starting"
         end
 
-        ws.on :retry do |event|
-          @logger.warn event[:message]
+        caller.on :retry do
+          warn "Listener '#{service_ref}' reconnecting"
         end
 
-        ws.on :error do |event|
-          err = 'Error during WebSocket handshake: Unexpected response code: 401'
-          if event.message == err
-            @logger.error "Sorry but you don't have access to this listener,
-              | either because your token is invalid or your plan doesn't
-              | support this listener"
-          else
-            @logger.error 'Failure in WebSocket connection to connector service'
-          end
+        caller.on :error do
+          error "Listener '#{service_ref}' dropped the connection"
         end
 
-        ws.open
+        caller.on :return do |data|
+          success "Listener '#{service_ref}' started"
+        end
 
-        @sockets << ws
+        caller.on :start_workflow do |data|
+          success "Listener '#{service_ref}' triggered"
+          block.call(simple_object_convert(data))
+        end
+
+        caller.on :fail do |info|
+          error "Listener '#{service_ref}' failed"
+          e.fail_block.call(action_response) if e.fail_block
+        end
+
+        caller.on :log do |log_info|
+          @logger.log log_info[:status], log_info
+        end
+
+        caller.listen(listener_id,params)
+        @callers << caller
       end
-      
       e
     end
 
@@ -150,70 +128,38 @@ module Factor
         workflow_id = workflow_index.join('::')
         workflow = @workflows[workflow_index]
         if workflow
-          @logger.success "Workflow '#{workflow_id}' starting"
-          content = simple_object_convert(params)
+          success "Workflow '#{workflow_id}' starting"
+          content = Factor::Common.simple_object_convert(params)
           workflow.call(content)
-          @logger.success "Workflow '#{workflow_id}' started"
+          success "Workflow '#{workflow_id}' started"
         else
-          @logger.error "Workflow '#{workflow_id}' not found"
+          error "Workflow '#{workflow_id}' not found"
           e.fail_block.call({}) if e.fail_block
         end
       else
         service_key = service_map[0..-2].map{|k| k.to_sym}
-        # service = @connectors[service_key]
-        # if service
-        #   ws = service.action(action_id)
-
-        #   handle_on_open(service_ref, 'Action', ws, params)
-
-        #   ws.on :error do
-        #     @logger.error 'Connection dropped while calling action'
-        #   end
-
-        #   ws.on :message do |event|
-        #     action_response = JSON.parse(event.data)
-        #     case action_response['type']
-        #     when 'return'
-        #       ws.close
-        #       @logger.success "Action '#{service_ref}' responded"
-        #       error_handle_call(action_response, &block)
-        #     when 'fail'
-        #       e.fail_block.call(action_response) if e.fail_block
-        #       ws.close
-        #       @logger.error "  #{action_response['message']}"
-        #       @logger.error "Action '#{service_ref}' failed"
-        #     when 'log'
-        #       action_response['message'] = "  #{action_response['message']}"
-        #       @logger.log action_response
-        #     else
-        #       @logger.error "Unknown action response: #{action_response}"
-        #     end
-        #   end
-
-        #   ws.open
-
-        #   @sockets << ws
-        # end
 
         connector_url = @connectors[service_key]
 
         caller = Factor::Runtime::ServiceCaller.new(connector_url)
 
         caller.on :open do
-          @logger.info "Action '#{service_ref}' starting"
+          info "Action '#{service_ref}' starting"
         end
 
         caller.on :error do
-          @logger.error 'Connection dropped while calling action'
+          error 'Connection dropped while calling action'
         end
 
         caller.on :return do |data|
-          @logger.success "Action '#{service_ref}' responded"
-          block.call(simple_object_convert(data))
+          success "Action '#{service_ref}' responded"
+          caller.close
+          block.call(Factor::Common.simple_object_convert(data))
         end
 
         caller.on :fail do |info|
-          @logger.error "Action '#{service_ref}' failed"
+          error "Action '#{service_ref}' failed"
+          caller.close
           e.fail_block.call(action_response) if e.fail_block
         end
 
@@ -222,8 +168,13 @@ module Factor
         end
 
         caller.action(action_id,params)
+        @callers << caller
       end
       e
+    end
+
+    def success(message)
+      @logger.success message
     end
 
     def info(message)
@@ -237,26 +188,5 @@ module Factor
     def error(message)
       @logger.error message
     end
-
-    private
-
-    def handle_on_open(service_ref, dsl_type, ws, params)
-      service_map = service_ref.split('::') 
-      service_id = service_map.first
-
-      ws.on :open do
-        params.merge!(@credentials[service_id.to_sym] || {})
-        @logger.success "#{dsl_type.capitalize} '#{service_ref}' called"
-        ws.send(params)
-      end
-    end
-
-    def error_handle_call(listener_response, &block)
-      content = simple_object_convert(listener_response['payload'])
-      block.call(content) if block
-    rescue => ex
-      @logger.error "Error in workflow definition: #{ex.message}", exception: ex
-    end
-
   end
 end
