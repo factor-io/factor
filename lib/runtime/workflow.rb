@@ -125,6 +125,11 @@ module Factor
             block.call(Factor::Common.simple_object_convert(data))
           end
 
+          caller.on :close do
+            error "Action '#{address}' disconnected"
+            e.fail_block.call(action_response) if e.fail_block
+          end
+
           caller.on :fail do |info|
             error "Action '#{address}' failed"
             e.fail_block.call(action_response) if e.fail_block
