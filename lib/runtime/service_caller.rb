@@ -11,6 +11,8 @@ module Factor
         @subscribers = {}
         @reconnect = options[:reconnect] || true
         @retry_period = options[:retry_period] || 5
+        @retry_count = 0
+        @offline_duration = 0
       end
 
       def listen(listener_id, params={})
@@ -40,29 +42,29 @@ module Factor
         @ws.send(params)
       end
 
+      def retry_connection(params)
+        @retry_count += 1
+        notify :retry, count: @retry_count, offline_duration: @offline_duration
+        @offline_duration += @retry_period
+
+        EM.next_tick{
+          sleep @retry_period
+          start(params)
+        }
+      end
+
       def call(url, params={})
         @ws = Factor::WebSocketManager.new(url)
-        retry_count = 0
-        offline_duration = 0
 
         @ws.on :open do
-          retry_count = 0
-          offline_duration = 0
+          @retry_count = 0
+          @offline_duration = 0
           notify :open
         end
 
         @ws.on :close do
-          notify :close if retry_count == 0
-          if @reconnect
-            retry_count += 1
-            notify :retry, count: retry_count, offline_duration: offline_duration
-            offline_duration += @retry_period
-
-            EM.next_tick{
-              sleep @retry_period
-              start(params)
-            }
-          end
+          notify :close if @retry_count == 0
+          retry_connection(params) if @reconnect
         end
 
         @ws.on :error do
