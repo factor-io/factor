@@ -1,10 +1,7 @@
 # encoding: UTF-8
 
 require 'securerandom'
-require 'yaml'
 require 'eventmachine'
-require 'uri'
-require 'faye/websocket'
 
 require 'commands/base'
 require 'common/deep_struct'
