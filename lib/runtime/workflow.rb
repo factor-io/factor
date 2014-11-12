@@ -35,15 +35,15 @@ module Factor
       end
 
       def listen(service_ref, params = {}, &block)
-        address = Factor::Runtime::ServiceAddress.new(service_ref)
-        e = Factor::Runtime::ExecHandler.new(service_ref, params)
+        address = ServiceAddress.new(service_ref)
+        e = ExecHandler.new(service_ref, params)
         connector_url = @connectors[address.namespace]
 
         if !connector_url
           error "Listener '#{address}' not found"
           e.fail_block.call({}) if e.fail_block
         else
-          caller = Factor::Runtime::ServiceCaller.new(connector_url)
+          caller = ServiceCaller.new(connector_url)
 
           caller.on :close do
             error "Listener '#{address}' disconnected"
@@ -85,14 +85,14 @@ module Factor
       end
 
       def workflow(service_ref, &block)
-        address = Factor::Runtime::ServiceAddress.new(service_ref)
+        address = ServiceAddress.new(service_ref)
         @workflows ||= {}
         @workflows[address] = block
       end
 
       def run(service_ref, params = {}, &block)
-        address = Factor::Runtime::ServiceAddress(service_ref)
-        e = Factor::Runtime::ExecHandler.new(service_ref, params)
+        address = ServiceAddress(service_ref)
+        e = ExecHandler.new(service_ref, params)
 
         if address.workflow?
           workflow_address = address.workflow_address
@@ -109,7 +109,7 @@ module Factor
           end
         else
           connector_url = @connectors[address.namespace]
-          caller = Factor::Runtime::ServiceCaller.new(connector_url)
+          caller = ServiceCaller.new(connector_url)
 
           caller.on :open do
             info "Action '#{address}' starting"
