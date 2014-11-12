@@ -153,7 +153,6 @@ module Factor
 
         caller.on :fail do |info|
           error "Action '#{service_ref}' failed"
-          caller.close
           e.fail_block.call(action_response) if e.fail_block
         end
 
