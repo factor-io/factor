@@ -7,23 +7,9 @@ require 'commands/base'
 require 'common/deep_struct'
 require 'runtime/service_caller'
 require 'runtime/service_address'
+require 'runtime/exec_handler'
 
 module Factor
-  # Runtime class is the magic of the server
-
-  class ExecHandler
-    attr_accessor :params, :service, :fail_block
-
-    def initialize(service = nil, params = {})
-      @service = service
-      @params = params
-    end
-
-    def on_fail(&block)
-      @fail_block = block
-    end
-  end
-
   class Workflow
     attr_accessor :name, :description, :id, :instance_id, :connectors, :credentials
 
@@ -48,9 +34,8 @@ module Factor
     end
 
     def listen(service_ref, params = {}, &block)
-      e = ExecHandler.new(service_ref, params)
-
       address = Factor::Runtime::ServiceAddress.new(service_ref)
+      e = Factor::Runtime::ExecHandler.new(service_ref, params)
       connector_url = @connectors[address.namespace]
 
       if !connector_url
@@ -106,8 +91,8 @@ module Factor
 
     def run(service_ref, params = {}, &block)
       address = Factor::Runtime::ServiceAddress(service_ref)
+      e = Factor::Runtime::ExecHandler.new(service_ref, params)
 
-      e = ExecHandler.new(service_ref, params)
       if address.workflow?
         workflow_address = address.workflow_address
         workflow = @workflows[workflow_address]
