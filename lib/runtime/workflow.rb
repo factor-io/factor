@@ -31,7 +31,6 @@ module Factor
 
     def initialize(connectors, credentials, options={})
       @workflow_spec  = {}
-      @callers        = []
       @workflows      = {}
       @instance_id    = SecureRandom.hex(3)
       @reconnect      = true
@@ -101,7 +100,6 @@ module Factor
         end
 
         caller.listen(listener_id,params)
-        @callers << caller
       end
       e
     end
@@ -164,7 +162,6 @@ module Factor
         end
 
         caller.action(action_id,params)
-        @callers << caller
       end
       e
     end
