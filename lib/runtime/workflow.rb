@@ -142,7 +142,7 @@ module Factor
         end
 
         caller.on :error do
-          error 'Connection dropped while calling action'
+          error "Action '#{service_ref}' dropped the connection"
         end
 
         caller.on :return do |data|
