@@ -6,6 +6,7 @@ require 'eventmachine'
 require 'commands/base'
 require 'common/deep_struct'
 require 'runtime/service_caller'
+require 'runtime/service_address'
 
 module Factor
   # Runtime class is the magic of the server
@@ -47,48 +48,44 @@ module Factor
     end
 
     def listen(service_ref, params = {}, &block)
-      service_map = service_ref.split('::') 
-      service_id = service_map.first
-      listener_id = service_map.last
-      service_key = service_map[0..-2].map{|k| k.to_sym}
-
       e = ExecHandler.new(service_ref, params)
 
-      connector_url = @connectors[service_key]
+      address = Factor::Runtime::ServiceAddress.new(service_ref)
+      connector_url = @connectors[address.namespace]
 
       if !connector_url
-        error "Listener '#{service_ref}' not found"
+        error "Listener '#{address}' not found"
         e.fail_block.call({}) if e.fail_block
       else
         caller = Factor::Runtime::ServiceCaller.new(connector_url)
 
         caller.on :close do
-          error "Listener '#{service_ref}' disconnected"
+          error "Listener '#{address}' disconnected"
         end
 
         caller.on :open do
-          info "Listener '#{service_ref}' starting"
+          info "Listener '#{address}' starting"
         end
 
         caller.on :retry do
-          warn "Listener '#{service_ref}' reconnecting"
+          warn "Listener '#{address}' reconnecting"
         end
 
         caller.on :error do
-          error "Listener '#{service_ref}' dropped the connection"
+          error "Listener '#{address}' dropped the connection"
         end
 
         caller.on :return do |data|
-          success "Listener '#{service_ref}' started"
+          success "Listener '#{address}' started"
         end
 
         caller.on :start_workflow do |data|
-          success "Listener '#{service_ref}' triggered"
+          success "Listener '#{address}' triggered"
           block.call(Factor::Common.simple_object_convert(data))
         end
 
         caller.on :fail do |info|
-          error "Listener '#{service_ref}' failed"
+          error "Listener '#{address}' failed"
           e.fail_block.call(action_response) if e.fail_block
         end
 
@@ -96,60 +93,54 @@ module Factor
           @logger.log log_info[:status], log_info
         end
 
-        caller.listen(listener_id,params)
+        caller.listen(address.id,params)
       end
       e
     end
 
     def workflow(service_ref, &block)
-      service_map = service_ref.split('::')
+      address = Factor::Runtime::ServiceAddress.new(service_ref)
       @workflows ||= {}
-      @workflows[service_map] = block
+      @workflows[address] = block
     end
 
     def run(service_ref, params = {}, &block)
-      service_map = service_ref.split('::') 
-      service_id = service_map.first
-      action_id = service_map.last      
+      address = Factor::Runtime::ServiceAddress(service_ref)
 
       e = ExecHandler.new(service_ref, params)
+      if address.workflow?
+        workflow_address = address.workflow_address
+        workflow = @workflows[workflow_address]
 
-      if service_id == 'workflow'
-        workflow_index = service_map[1..-1]
-        workflow_id = workflow_index.join('::')
-        workflow = @workflows[workflow_index]
         if workflow
-          success "Workflow '#{workflow_id}' starting"
+          success "Workflow '#{workflow_address}' starting"
           content = Factor::Common.simple_object_convert(params)
           workflow.call(content)
-          success "Workflow '#{workflow_id}' started"
+          success "Workflow '#{workflow_address}' started"
         else
-          error "Workflow '#{workflow_id}' not found"
+          error "Workflow '#{workflow_address}' not found"
           e.fail_block.call({}) if e.fail_block
         end
       else
-        service_key = service_map[0..-2].map{|k| k.to_sym}
-
-        connector_url = @connectors[service_key]
-
+        connector_url = @connectors[address.namespace]
         caller = Factor::Runtime::ServiceCaller.new(connector_url)
 
         caller.on :open do
-          info "Action '#{service_ref}' starting"
+          info "Action '#{address}' starting"
         end
 
         caller.on :error do
-          error "Action '#{service_ref}' dropped the connection"
+          error "Action '#{address}' dropped the connection"
         end
 
         caller.on :return do |data|
-          success "Action '#{service_ref}' responded"
+          success "Action '#{address}' responded"
           caller.close
           block.call(Factor::Common.simple_object_convert(data))
         end
 
         caller.on :fail do |info|
-          error "Action '#{service_ref}' failed"
+          error "Action '#{address}' failed"
           e.fail_block.call(action_response) if e.fail_block
         end
 
@@ -157,7 +148,7 @@ module Factor
           @logger.log log_info[:status], log_info
         end
 
-        caller.action(action_id,params)
+        caller.action(address.id,params)
       end
       e
     end
