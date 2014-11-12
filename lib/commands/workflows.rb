@@ -130,7 +130,7 @@ module Factor
         begin
           connector_settings = configatron.connectors.to_hash
           credential_settings = configatron.credentials.to_hash
-          runtime = Workflow.new(connector_settings, credential_settings, logger: logger)
+          runtime = Factor::Runtime::Workflow.new(connector_settings, credential_settings, logger: logger)
         rescue => ex
           message = "Couldn't setup workflow process"
           logger.error message:message, exception:ex
