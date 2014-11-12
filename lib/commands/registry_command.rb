@@ -10,7 +10,7 @@ require 'commands/base'
 module Factor
   module Commands
     # Workflow is a Command to start the factor runtime from the CLI
-    class Registry < Factor::Commands::Command
+    class RegistryCommand < Factor::Commands::Command
 
       def workflows(args, options)
         list = get_yaml_data 'https://raw.githubusercontent.com/factor-io/index/master/workflows.yml'

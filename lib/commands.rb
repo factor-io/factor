@@ -3,8 +3,8 @@
 require 'commander/import'
 
 require 'factor/version'
-require 'commands/workflows'
-require 'commands/registry'
+require 'commands/workflow_command'
+require 'commands/registry_command'
 
 program :name, 'Factor.io Server'
 program :version, Factor::VERSION
@@ -30,7 +30,7 @@ end
 command 'registry workflows' do |c|
   c.syntax = 'factor registry workflows'
   c.description = 'Get list of available workflow jumpstarts'
-  c.when_called Factor::Commands::Registry, :workflows
+  c.when_called Factor::Commands::RegistryCommand, :workflows
 end
 
 command 'registry workflows add' do |c|
@@ -39,13 +39,13 @@ command 'registry workflows add' do |c|
   c.option '--credentials FILE', String, 'credentials.yml file path.'
   c.option '--connectors FILE', String, 'connectors.yml file path'
   c.option '--values \'{"api_key":"foo"}\'', String, "{}"
-  c.when_called Factor::Commands::Registry, :add_workflow
+  c.when_called Factor::Commands::RegistryCommand, :add_workflow
 end
 
 command 'registry connectors' do |c|
   c.syntax = 'factor registry connectors'
   c.description = 'Get list of available connectors'
-  c.when_called Factor::Commands::Registry, :connectors
+  c.when_called Factor::Commands::RegistryCommand, :connectors
 end
 
 command 'registry connector add' do |c|
@@ -54,7 +54,7 @@ command 'registry connector add' do |c|
   c.option '--credentials FILE', String, 'credentials.yml file path.'
   c.option '--connectors FILE', String, 'connectors.yml file path'
   c.option '--values \'{"api_key":"foo"}\'', String, "{}"
-  c.when_called Factor::Commands::Registry, :add_connector
+  c.when_called Factor::Commands::RegistryCommand, :add_connector
 end
 
 alias_command 's', 'server'

@@ -2,7 +2,9 @@
 
 require 'spec_helper'
 
-describe Factor::Commands::Workflow do
+require 'commands/workflow_command'
+
+describe Factor::Commands::WorkflowCommand do
   describe '.server' do
     it 'can run a basic workflow' do
 
