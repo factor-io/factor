@@ -48,7 +48,6 @@ module Factor
           action_response = JSON.parse(event.data)
           case action_response['type']
           when 'return'
-            @ws.close
             notify :return, action_response['payload']
           when 'fail'
             @ws.close
