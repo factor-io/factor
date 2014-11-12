@@ -3,12 +3,12 @@
 require 'configatron'
 
 require 'commands/base'
-require 'runtime'
+require 'runtime/workflow'
 
 module Factor
   module Commands
     # Workflow is a Command to start the factor runtime from the CLI
-    class Workflow < Factor::Commands::Command
+    class WorkflowCommand < Factor::Commands::Command
       def initialize
         @workflows = {}
         super
@@ -130,7 +130,7 @@ module Factor
         begin
           connector_settings = configatron.connectors.to_hash
           credential_settings = configatron.credentials.to_hash
-          runtime = Runtime.new(connector_settings, credential_settings, logger: logger)
+          runtime = Factor::Runtime::Workflow.new(connector_settings, credential_settings, logger: logger)
         rescue => ex
           message = "Couldn't setup workflow process"
           logger.error message:message, exception:ex

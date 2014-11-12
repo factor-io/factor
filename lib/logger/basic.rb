@@ -42,7 +42,7 @@ module Factor
 
       def format_section(section)
         formated_section = section.to_s.upcase.center(10)
-        case section
+        case section.to_sym
         when :error then formated_section.red
         when :info then formated_section.bold
         when :warn then formated_section.yellow

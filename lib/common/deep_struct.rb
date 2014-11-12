@@ -33,7 +33,7 @@ module Factor
       g
     end
 
-    def simple_object_convert(item)
+    def self.simple_object_convert(item)
       if item.is_a?(Hash)
         Factor::Common::DeepStruct.new(item)
       elsif item.is_a?(Array)

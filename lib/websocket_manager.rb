@@ -2,6 +2,7 @@
 
 require 'faye/websocket'
 require 'uri'
+require 'json'
 
 module Factor
   # class for managing the web socket connections
@@ -54,7 +55,7 @@ module Factor
     end
 
     def send(msg)
-      @ws.send(msg)
+      @ws.send(msg.to_json)
     end
 
     private
