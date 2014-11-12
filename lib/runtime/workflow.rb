@@ -38,11 +38,7 @@ module Factor
       @logger         = options[:logger] if options[:logger]
 
       @connectors = Factor::Common.flat_hash(connectors)
-
-      @credentials = {}
-      credentials.each do |connector_id, credential_settings|
-        @credentials[connector_id] = credential_settings
-      end
+      @credentials = credentials
     end
 
     def load(workflow_definition)
