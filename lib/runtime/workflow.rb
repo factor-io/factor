@@ -1,6 +1,5 @@
 # encoding: UTF-8
 
-require 'json'
 require 'securerandom'
 require 'yaml'
 require 'eventmachine'
@@ -10,6 +9,7 @@ require 'faye/websocket'
 require 'listener'
 require 'commands/base'
 require 'common/deep_struct'
+require 'runtime/service_caller'
 
 module Factor
   # Runtime class is the magic of the server
@@ -27,7 +27,7 @@ module Factor
     end
   end
 
-  class Runtime
+  class Workflow
     attr_accessor :name, :description, :id, :instance_id, :connectors, :credentials
 
     def initialize(connectors, credentials, options={})
@@ -45,10 +45,11 @@ module Factor
         exit
       end
 
-      @connectors = {}
-      Factor::Common.flat_hash(connectors).each do |key, connector_url|
-        @connectors[key] = Listener.new(connector_url)
-      end
+      # @connectors = {}
+      # Factor::Common.flat_hash(connectors).each do |key, connector_url|
+      #   @connectors[key] = Listener.new(connector_url)
+      # end
+      @connectors = Factor::Common.flat_hash(connectors)
 
       @credentials = {}
       credentials.each do |connector_id, credential_settings|
@@ -159,40 +160,68 @@ module Factor
         end
       else
         service_key = service_map[0..-2].map{|k| k.to_sym}
-        service = @connectors[service_key]
-        if service
-          ws = service.action(action_id)
+        # service = @connectors[service_key]
+        # if service
+        #   ws = service.action(action_id)
 
-          handle_on_open(service_ref, 'Action', ws, params)
+        #   handle_on_open(service_ref, 'Action', ws, params)
 
-          ws.on :error do
-            @logger.error 'Connection dropped while calling action'
-          end
+        #   ws.on :error do
+        #     @logger.error 'Connection dropped while calling action'
+        #   end
 
-          ws.on :message do |event|
-            action_response = JSON.parse(event.data)
-            case action_response['type']
-            when 'return'
-              ws.close
-              @logger.success "Action '#{service_ref}' responded"
-              error_handle_call(action_response, &block)
-            when 'fail'
-              e.fail_block.call(action_response) if e.fail_block
-              ws.close
-              @logger.error "  #{action_response['message']}"
-              @logger.error "Action '#{service_ref}' failed"
-            when 'log'
-              action_response['message'] = "  #{action_response['message']}"
-              @logger.log action_response
-            else
-              @logger.error "Unknown action response: #{action_response}"
-            end
-          end
+        #   ws.on :message do |event|
+        #     action_response = JSON.parse(event.data)
+        #     case action_response['type']
+        #     when 'return'
+        #       ws.close
+        #       @logger.success "Action '#{service_ref}' responded"
+        #       error_handle_call(action_response, &block)
+        #     when 'fail'
+        #       e.fail_block.call(action_response) if e.fail_block
+        #       ws.close
+        #       @logger.error "  #{action_response['message']}"
+        #       @logger.error "Action '#{service_ref}' failed"
+        #     when 'log'
+        #       action_response['message'] = "  #{action_response['message']}"
+        #       @logger.log action_response
+        #     else
+        #       @logger.error "Unknown action response: #{action_response}"
+        #     end
+        #   end
 
-          ws.open
+        #   ws.open
 
-          @sockets << ws
+        #   @sockets << ws
+        # end
+
+        connector_url = @connectors[service_key]
+
+        caller = Factor::Runtime::ServiceCaller.new(connector_url)
+
+        caller.on :open do
+          @logger.info "Action '#{service_ref}' starting"
         end
+
+        caller.on :error do
+          @logger.error 'Connection dropped while calling action'
+        end
+
+        caller.on :return do |data|
+          @logger.success "Action '#{service_ref}' responded"
+          block.call(simple_object_convert(data))
+        end
+
+        caller.on :fail do |info|
+          @logger.error "Action '#{service_ref}' failed"
+          e.fail_block.call(action_response) if e.fail_block
+        end
+
+        caller.on :log do |log_info|
+          @logger.log log_info[:status], log_info
+        end
+
+        caller.action(action_id,params)
       end
       e
     end
@@ -218,7 +247,7 @@ module Factor
       ws.on :open do
         params.merge!(@credentials[service_id.to_sym] || {})
         @logger.success "#{dsl_type.capitalize} '#{service_ref}' called"
-        ws.send(params.to_json)
+        ws.send(params)
       end
     end
 
