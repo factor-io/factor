@@ -4,16 +4,22 @@ require 'eventmachine'
 module Factor
   module Runtime
     class ServiceCaller
-      def initialize(connector_url)
+      attr_accessor :reconnect, :retry_period
+
+      def initialize(connector_url, options = {})
         @url = connector_url
         @subscribers = {}
+        @reconnect = options[:reconnect] || true
+        @retry_period = options[:retry_period] || 5
       end
 
       def listen(listener_id, params={})
+        @reconnect = true
         call("#{@url}/listeners/#{listener_id}", params)
       end
 
       def action(action_id, params={})
+        @reconnect = false
         call("#{@url}/actions/#{action_id}", params)
       end
 
@@ -31,13 +37,29 @@ module Factor
 
       def call(url, params={})
         @ws = Factor::WebSocketManager.new(url)
+        retry_count = 0
+        offline_duration = 0
 
         @ws.on :open do
+          retry_count = 0
+          offline_duration = 0
           notify :open
         end
 
         @ws.on :close do
-          notify :close
+          notify :close if retry_count == 0
+          if @reconnect
+            
+            retry_count += 1
+            notify :retry, count: retry_count, offline_duration: offline_duration
+            offline_duration += @retry_period
+
+            EM.next_tick{
+              sleep @retry_period
+              @ws.open
+              @ws.send(params)
+            }
+          end
         end
 
         @ws.on :error do

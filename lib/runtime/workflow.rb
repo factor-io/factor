@@ -53,8 +53,14 @@ module Factor
             info "Listener '#{address}' starting"
           end
 
-          caller.on :retry do
-            warn "Listener '#{address}' reconnecting"
+          caller.on :retry do |retry_info|
+            if retry_info
+              details = " ("
+              details << "retry #{retry_info[:count]}"
+              details << ", offline for #{retry_info[:offline_duration]} seconds" if retry_info[:offline_duration] > 0
+              details << ")"
+            end
+            warn "Listener '#{address}' reconnecting#{details || ''}"
           end
 
           caller.on :error do
