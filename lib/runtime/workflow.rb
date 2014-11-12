@@ -97,7 +97,7 @@ module Factor
       end
 
       def run(service_ref, params = {}, &block)
-        address = ServiceAddress(service_ref)
+        address = ServiceAddress.new(service_ref)
         e = ExecHandler.new(service_ref, params)
 
         if address.workflow?

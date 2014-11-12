@@ -37,9 +37,9 @@ module Factor
         self.join('::')
       end
 
-      def workflow_address(string)
-        workflow_service_map = @service_map[1..-1]
-        self.new workflow_service_map
+      def workflow_address
+        workflow_service_map = self[1..-1]
+        ServiceAddress.new workflow_service_map
       end
     end
   end
