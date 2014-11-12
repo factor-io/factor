@@ -35,6 +35,11 @@ module Factor
 
       private
 
+      def start(params)
+        @ws.open
+        @ws.send(params)
+      end
+
       def call(url, params={})
         @ws = Factor::WebSocketManager.new(url)
         retry_count = 0
@@ -49,15 +54,13 @@ module Factor
         @ws.on :close do
           notify :close if retry_count == 0
           if @reconnect
-            
             retry_count += 1
             notify :retry, count: retry_count, offline_duration: offline_duration
             offline_duration += @retry_period
 
             EM.next_tick{
               sleep @retry_period
-              @ws.open
-              @ws.send(params)
+              start(params)
             }
           end
         end
@@ -85,8 +88,7 @@ module Factor
           end
         end
 
-        @ws.open
-        @ws.send(params)
+        start(params)
       end
 
       def notify(event, params={})
