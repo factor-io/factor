@@ -44,9 +44,10 @@ end
 
 command 'registry workflows add' do |c|
   c.syntax = 'factor registry workflow add <id>'
-  c.description = 'Get list of available workflows'
+  c.description = 'Add a workflow to your working directory'
   c.option '--credentials FILE', String, 'credentials.yml file path.'
   c.option '--connectors FILE', String, 'connectors.yml file path'
+  c.option '--path FILE', String, 'Path to workflows'
   c.option '--values \'{"api_key":"foo"}\'', String, "{}"
   c.when_called Factor::Commands::RegistryCommand, :add_workflow
 end
