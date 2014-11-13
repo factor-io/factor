@@ -85,7 +85,8 @@ module Factor
             @logger.log log_info[:status], log_info
           end
 
-          caller.listen(address.id,params)
+          service_credentials = @credentials[address.service.to_sym] || {}
+          caller.listen(address.id,params.merge(service_credentials))
         end
         e
       end
@@ -145,7 +146,8 @@ module Factor
             @logger.log log_info[:status], log_info
           end
 
-          caller.action(address.id,params)
+          service_credentials = @credentials[address.service.to_sym] || {}
+          caller.action(address.id,params.merge(service_credentials))
         end
         e
       end
