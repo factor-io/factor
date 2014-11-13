@@ -128,7 +128,7 @@ module Factor
           caller.on :return do |data|
             success "Action '#{address}' responded"
             caller.close
-            block.call(Factor::Common.simple_object_convert(data['payload']))
+            block.call(Factor::Common.simple_object_convert(data)) if block
           end
 
           caller.on :close do

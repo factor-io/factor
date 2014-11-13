@@ -84,7 +84,7 @@ module Factor
             message = "  #{action_response['message']}"
             notify :log, status: action_response['status'], message: message
           when 'start_workflow'
-            notify :start_workflow, action_response
+            notify :start_workflow, action_response['payload']
           else
             notify :log, status:'error', message: "Unknown action response: #{action_response}"
           end
