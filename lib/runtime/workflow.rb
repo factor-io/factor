@@ -139,7 +139,7 @@ module Factor
 
           caller.on :fail do |info|
             error "Action '#{address}' failed"
-            e.fail_block.call(action_response) if e.fail_block
+            e.fail_block.call(info) if e.fail_block
           end
 
           caller.on :log do |log_info|
