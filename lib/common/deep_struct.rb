@@ -21,6 +21,14 @@ module Factor
         @hash_table
       end
 
+      def to_s
+        @hash_table.to_s
+      end
+
+      def inspect
+        @hash_table.inspect
+      end
+
       def [](idx)
         hash = marshal_dump
         hash[idx.to_sym]
