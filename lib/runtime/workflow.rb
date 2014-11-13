@@ -87,7 +87,7 @@ module Factor
 
         caller.on :start_workflow do |data|
           success "Listener '#{service_ref}' triggered"
-          block.call(Factor::Common.simple_object_convert(data))
+          block.call(Factor::Common.simple_object_convert(data['payload']))
         end
 
         caller.on :fail do |info|
@@ -148,7 +148,7 @@ module Factor
         caller.on :return do |data|
           success "Action '#{service_ref}' responded"
           caller.close
-          block.call(Factor::Common.simple_object_convert(data))
+          block.call(Factor::Common.simple_object_convert(data['payload']))
         end
 
         caller.on :fail do |info|
