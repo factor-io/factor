@@ -58,7 +58,7 @@ command 'registry connectors' do |c|
   c.when_called Factor::Commands::RegistryCommand, :connectors
 end
 
-command 'registry connector add' do |c|
+command 'registry connectors add' do |c|
   c.syntax = 'factor registry connector add <id>'
   c.description = 'Get list of available connectors'
   c.option '--credentials FILE', String, 'credentials.yml file path.'
