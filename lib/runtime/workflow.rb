@@ -134,7 +134,6 @@ module Factor
 
           caller.on :close do
             error "Action '#{address}' disconnected"
-            e.fail_block.call(action_response) if e.fail_block
           end
 
           caller.on :fail do |info|
