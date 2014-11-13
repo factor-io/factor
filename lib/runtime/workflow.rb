@@ -73,7 +73,7 @@ module Factor
 
           caller.on :start_workflow do |data|
             success "Listener '#{address}' triggered"
-            block.call(Factor::Common.simple_object_convert(data['payload']))
+            block.call(Factor::Common.simple_object_convert(data)) if block
           end
 
           caller.on :fail do |info|

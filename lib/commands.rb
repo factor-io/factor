@@ -5,6 +5,7 @@ require 'commander/import'
 require 'factor/version'
 require 'commands/workflow_command'
 require 'commands/registry_command'
+require 'commands/run_command'
 
 program :name, 'Factor.io Server'
 program :version, Factor::VERSION
@@ -18,6 +19,14 @@ command 'server' do |c|
   c.option '--connectors FILE', String, 'connectors.yml file path'
   c.option '--path FILE', String, 'Path to workflows'
   c.when_called Factor::Commands::WorkflowCommand, :server
+end
+
+command 'run' do |c|
+  c.syntax = 'factor run service_address params'
+  c.description = 'Run a specific command.'
+  c.option '--credentials FILE', String, 'credentials.yml file path.'
+  c.option '--connectors FILE', String, 'connectors.yml file path'
+  c.when_called Factor::Commands::RunCommand, :run
 end
 
 command 'cloud' do |c|
