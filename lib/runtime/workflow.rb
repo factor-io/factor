@@ -39,7 +39,7 @@ module Factor
         e = ExecHandler.new(service_ref, params)
         connector_url = @connectors[address.namespace]
 
-        if !connector_url
+        unless connector_url
           error "Listener '#{address}' not found"
           e.fail_block.call({}) if e.fail_block
         else
@@ -116,37 +116,43 @@ module Factor
           end
         else
           connector_url = @connectors[address.namespace]
-          caller = ServiceCaller.new(connector_url)
 
-          caller.on :open do
-            info "Action '#{address}' starting"
+          unless connector_url
+            error "Action '#{address}' not found"
+            e.fail_block.call({}) if e.fail_block
+          else
+            caller = ServiceCaller.new(connector_url)
+
+            caller.on :open do
+              info "Action '#{address}' starting"
+            end
+
+            caller.on :error do
+              error "Action '#{address}' dropped the connection"
+            end
+
+            caller.on :return do |data|
+              success "Action '#{address}' responded"
+              caller.close
+              block.call(Factor::Common.simple_object_convert(data)) if block
+            end
+
+            caller.on :close do
+              error "Action '#{address}' disconnected"
+            end
+
+            caller.on :fail do |info|
+              error "Action '#{address}' failed"
+              e.fail_block.call(info) if e.fail_block
+            end
+
+            caller.on :log do |log_info|
+              @logger.log log_info[:status], log_info
+            end
+
+            service_credentials = @credentials[address.service.to_sym] || {}
+            caller.action(address.id,params.merge(service_credentials))
           end
-
-          caller.on :error do
-            error "Action '#{address}' dropped the connection"
-          end
-
-          caller.on :return do |data|
-            success "Action '#{address}' responded"
-            caller.close
-            block.call(Factor::Common.simple_object_convert(data)) if block
-          end
-
-          caller.on :close do
-            error "Action '#{address}' disconnected"
-          end
-
-          caller.on :fail do |info|
-            error "Action '#{address}' failed"
-            e.fail_block.call(info) if e.fail_block
-          end
-
-          caller.on :log do |log_info|
-            @logger.log log_info[:status], log_info
-          end
-
-          service_credentials = @credentials[address.service.to_sym] || {}
-          caller.action(address.id,params.merge(service_credentials))
         end
         e
       end
