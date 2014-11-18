@@ -141,7 +141,7 @@ module Factor
             logger.info "Starting workflow"
             runtime.load(workflow_definition)
           rescue => ex
-            logger.error message: "Couldn't workflow", exception: ex
+            logger.error message: "Couldn't start workflow", exception: ex
           end
         end
 
