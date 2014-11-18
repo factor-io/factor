@@ -121,6 +121,8 @@ module Factor
             error "Action '#{address}' not found"
             e.fail_block.call({}) if e.fail_block
           else
+            returned = false
+            failed = false
             caller = ServiceCaller.new(connector_url)
 
             caller.on :open do
@@ -132,16 +134,21 @@ module Factor
             end
 
             caller.on :return do |data|
+              returned = true
               success "Action '#{address}' responded"
               caller.close
               block.call(Factor::Common.simple_object_convert(data)) if block
             end
 
             caller.on :close do
-              error "Action '#{address}' disconnected"
+              if !returned && !failed
+                error "Action '#{address}' disconnected"
+                e.fail_block.call({}) if e.fail_block
+              end
             end
 
             caller.on :fail do |info|
+              failed = true
               error "Action '#{address}' failed"
               e.fail_block.call(info) if e.fail_block
             end
