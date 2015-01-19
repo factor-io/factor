@@ -18,12 +18,12 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   s.add_runtime_dependency 'commander', '~> 4.2.1'
-  s.add_runtime_dependency 'faye-websocket', '~> 0.8.0'
+  s.add_runtime_dependency 'faye-websocket', '~> 0.9.2'
   s.add_runtime_dependency 'colored', '~> 1.2'
-  s.add_runtime_dependency 'configatron', '~> 4.2.1'
+  s.add_runtime_dependency 'configatron', '~> 4.5.0'
   s.add_runtime_dependency 'rest-client', '~> 1.7.2'
   s.add_runtime_dependency 'erubis', '~> 2.7.0'
-  s.add_development_dependency 'codeclimate-test-reporter', '~> 0.4.1'
+  s.add_development_dependency 'codeclimate-test-reporter', '~> 0.4.5'
   s.add_development_dependency 'rspec', '~> 3.1.0'
-  s.add_development_dependency 'rake', '~> 10.3.2'
+  s.add_development_dependency 'rake', '~> 10.4.2'
 end
