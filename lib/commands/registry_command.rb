@@ -2,7 +2,7 @@
 
 require 'yaml'
 require 'rest-client'
-require 'erubis'
+require 'liquid'
 require 'json'
 
 require 'commands/base'
@@ -99,8 +99,8 @@ module Factor
         end
 
         begin
-          eruby = Erubis::Eruby.new(template)
-          workflow_content = eruby.result(variables)
+          liquid = Liquid::Template.parse(template)
+          workflow_content = liquid.render variables
         rescue
           puts "Failed to generate template".red
           exit
