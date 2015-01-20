@@ -133,7 +133,7 @@ module Factor
           connector_info = list[connector_id]
           connector_name = connector_info['name']
           new_connectors = connector_info['connectors']
-          required_credentials = connector_info['credentials']
+          required_credentials = connector_info['credentials'] || {}
         rescue
           puts "Couldn't find information for '#{connector_id}'".red
           exit
