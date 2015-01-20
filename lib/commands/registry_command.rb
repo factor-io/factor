@@ -81,14 +81,17 @@ module Factor
 
         variables = {}
         config['variables'].each do |var_id,var_info|
-          puts var_info['description'] if var_info['description']
           values = begin
             JSON.parse(options.values)
           rescue 
             {}
           end
-          variables[var_id] = values[var_id]
-          variables[var_id] ||= ask("#{var_info['name'].bold}#{' (optional)' if var_info['optional']}: ").to_s
+          if values[var_id]
+            variables[var_id.to_s] = values[var_id]
+          else
+            puts var_info['description'] if var_info['description']
+            variables[var_id.to_s] = ask("#{var_info['name'].bold}#{' (optional)' if var_info['optional']}: ").to_s
+          end
         end
 
         begin
@@ -115,7 +118,7 @@ module Factor
         end
 
 
-        puts "Created #{workflow_name} successfully".green
+        puts "Created '#{workflow_name}' successfully".green
       end
     
       private
