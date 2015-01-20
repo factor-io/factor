@@ -1,11 +1,7 @@
 # encoding: UTF-8
 
-require 'configatron'
-
 require 'commands/base'
 require 'runtime/workflow'
-
-require 'pp'
 
 module Factor
   module Commands
