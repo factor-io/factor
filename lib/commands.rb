@@ -68,4 +68,3 @@ command 'registry connectors add' do |c|
 end
 
 alias_command 's', 'server'
-alias_command 'r', 'registry'
