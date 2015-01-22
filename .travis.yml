@@ -4,3 +4,10 @@ rvm:
 env:
   matrix:
     secure: Tq2/ECBrOTUmGLk/IaoeukgjCZ3ZfBVvAh8rvX6c2GJ0MopTXbWGRAaOxK+CXPqEW1X3NCtvJx26ti+QiXfEufACHllfYFpGeD9+AEreDyyFjA10X4/vgh5k4EiFP7p+3VAj8N1i2/+H5554IRxJgmhWNR7iATOavRf7g05nfec=
+deploy:
+  provider: rubygems
+  gem: factor
+  api_key:
+    secure: T24epDVon+Cx5yVd02i1ToHjr5pWnMjTCyudzlAXLBF9Rtsta6N6O41RNuHk94KXzoyfS4r8snblzENqR4OFYGE7VkDR1S14nE1rJWM7O9H3ExJh+mPrGtZNQ2Iaxl/a6wGNUb8TQYQEV8v+Qdt7FyFvtESZxHbSClJ7ChOZ1v0=
+  on:
+    tags: true
