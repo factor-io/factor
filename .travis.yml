@@ -8,6 +8,7 @@ deploy:
   provider: rubygems
   gem: factor
   api_key:
-    secure: T24epDVon+Cx5yVd02i1ToHjr5pWnMjTCyudzlAXLBF9Rtsta6N6O41RNuHk94KXzoyfS4r8snblzENqR4OFYGE7VkDR1S14nE1rJWM7O9H3ExJh+mPrGtZNQ2Iaxl/a6wGNUb8TQYQEV8v+Qdt7FyFvtESZxHbSClJ7ChOZ1v0=
+    secure: mMY5ZBtkbojnbXBLCnMpvdokLoJU+RbeafrQ3CZpOGXK4+mg8hoY79kdNIYNImF4bhOh3G0Ol0ByCsBGcciX1hknWLyrv8ZNNxlhoDLgTozcTIi8Zyd1SkRD360LUxGn5cDOgX+7o226zh6p2B742dVcgIf8Y469cGxT855DpBg=
   on:
     tags: true
+    all_branches: true
