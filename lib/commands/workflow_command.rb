@@ -15,7 +15,6 @@ module Factor
       def server(_args, options)
         config_settings = {}
         config_settings[:credentials] = options.credentials
-        config_settings[:connectors]  = options.connectors
         workflow_filename = File.expand_path(options.path || '.')
         @destination_stream = File.new(options.log, 'w+') if options.log
 
@@ -58,23 +57,6 @@ module Factor
 
         configatron[:credentials].configure_from_hash(credentials)
 
-        logger.info "Getting connectors from Factor.io Cloud"
-        connectors = {}
-        begin
-          connectors_url = "#{host}/#{account_id}/connectors.json?auth_token=#{api_key}"
-          raw_content = RestClient.get(connectors_url)
-          raw_connectors = JSON.parse(raw_content)
-
-          raw_connectors.each do |connector_id,connector_info|
-            connectors[connector_id] = connector_info['connectors'].values.first
-          end
-        rescue => ex
-          logger.error "Couldn't retreive workflow: #{ex.message}"
-          exit
-        end
-
-        configatron[:connectors].configure_from_hash(connectors)
-
         @workflows[workflow_id] = load_workflow_from_definition(workflow_definition)
 
         block_until_interupt
@@ -105,8 +87,6 @@ module Factor
           end
         rescue Interrupt
           logger.info 'Exiting app...'
-        ensure
-          @workflows.keys.each { |workflow_id| unload_workflow(workflow_id) }
         end
       end
 
@@ -126,9 +106,8 @@ module Factor
       def load_workflow_from_definition(workflow_definition)
         logger.info "Setting up workflow processor"
         begin
-          connector_settings = configatron.connectors.to_hash
           credential_settings = configatron.credentials.to_hash
-          runtime = Factor::Runtime::Workflow.new(connector_settings, credential_settings, logger: logger)
+          runtime = Factor::Runtime::Workflow.new(credential_settings, logger: logger)
         rescue => ex
           message = "Couldn't setup workflow process"
           logger.error message:message, exception:ex
@@ -146,10 +125,6 @@ module Factor
         workflow_thread
       end
 
-      def unload_workflow(workflow_id)
-        logger.info "Stopping #{workflow_id}"
-        Process.kill('SIGINT', @workflows[workflow_id])
-      end
     end
   end
 end

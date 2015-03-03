@@ -14,12 +14,10 @@ module Factor
       def run(args, options)
         config_settings = {}
         config_settings[:credentials] = options.credentials
-        config_settings[:connectors]  = options.connectors
         load_config(config_settings)
 
-        connector_settings = configatron.connectors.to_hash
         credential_settings = configatron.credentials.to_hash
-        runtime = Factor::Runtime::Workflow.new(connector_settings, credential_settings, logger: logger)
+        runtime = Factor::Runtime::Workflow.new(credential_settings, logger: logger)
 
         begin
           params = JSON.parse(args[1] || '{}')

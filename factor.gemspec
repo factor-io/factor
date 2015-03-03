@@ -18,7 +18,6 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   s.add_runtime_dependency 'commander', '~> 4.3.0'
-  s.add_runtime_dependency 'faye-websocket', '~> 0.8.0'
   s.add_runtime_dependency 'colored', '~> 1.2'
   s.add_runtime_dependency 'configatron', '~> 4.5.0'
   s.add_runtime_dependency 'rest-client', '~> 1.7.3'

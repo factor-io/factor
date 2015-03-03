@@ -16,7 +16,6 @@ command 'server' do |c|
   c.description = 'Start the Factor.io Server in the current local directory'
   c.option '--log FILE', String, 'Log file path. Default is stdout.'
   c.option '--credentials FILE', String, 'credentials.yml file path.'
-  c.option '--connectors FILE', String, 'connectors.yml file path'
   c.option '--path FILE', String, 'Path to workflows'
   c.when_called Factor::Commands::WorkflowCommand, :server
 end
@@ -25,7 +24,6 @@ command 'run' do |c|
   c.syntax = 'factor run service_address params'
   c.description = 'Run a specific command.'
   c.option '--credentials FILE', String, 'credentials.yml file path.'
-  c.option '--connectors FILE', String, 'connectors.yml file path'
   c.when_called Factor::Commands::RunCommand, :run
 end
 
