@@ -40,7 +40,7 @@ module Factor
             payload = response[:payload]
 
             success "[#{id}] Listener Triggered '#{address}'"
-            block.call(Factor::Common::DeepStruct.new(payload)) if block
+            block.call(Factor::Common.simple_object_convert(payload)) if block
 
           when 'log'
             log_callback("  [#{id}] #{message}",response[:status])
@@ -87,7 +87,7 @@ module Factor
           when 'return'
             success "[#{id}] Action Completed '#{address}'"
             payload = response[:payload] || {}
-            # block.call(Factor::Common::DeepStruct.new(payload)) if block
+            block.call(Factor::Common.simple_object_convert(payload)) if block
             keep_looping=false
           end
         end
