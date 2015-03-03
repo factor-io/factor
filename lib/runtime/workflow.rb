@@ -23,10 +23,12 @@ module Factor
 
       def load(workflow_definition)
         instance_eval(workflow_definition)
+
+        nap
       end
 
       def listen(service_ref, params = {}, &block)
-        address, service_instance, params_and_creds = initialize_service_instance(service_ref,params)
+        address, service_instance, exec, params_and_creds = initialize_service_instance(service_ref,params)
         id = SecureRandom.hex(4)
 
         service_instance.callback = proc do |response|
@@ -47,33 +49,23 @@ module Factor
           when 'fail'
             message = response[:message] || 'unkonwn error'
             error "[#{id}] Listener Failed '#{address}': #{message}"
-            raise Factor::Runtime::ConnectorError, message
+            
+            exec.fail_block.call(message) if exec.fail_bock
           end
         end
 
         success "[#{id}] Listener Starting '#{address}'"
         listener_instance = service_instance.start_listener(address.id, params)
 
-        nap
-
         success "[#{id}] Listener Stopped '#{address}'"
-
-        true
-      end
-
-      def workflow(service_ref, &block)
-        address = ServiceAddress.new(service_ref)
-        @workflows ||= {}
-        @workflows[address] = block
+        exec
       end
 
       def run(service_ref, params = {}, &block)
-        address, service_instance, params_and_creds = initialize_service_instance(service_ref,params)
+        address, service_instance, exec, params_and_creds = initialize_service_instance(service_ref,params)
         id = SecureRandom.hex(4)
-        payload = nil
 
-        keep_looping = true
-        service_instance.callback = proc do |response|
+        service_instance.callback = Proc.new do |response|
           message = response[:message]
           type    = response[:type]
 
@@ -83,24 +75,22 @@ module Factor
           when 'fail'
             error_message = response[:message] || "unknown error"
             error "[#{id}] Action Failed '#{address}': #{error_message}"
-            raise Factor::Runtime::ConnectorError, message
+            service_instance.stop_action(address.id)
           when 'return'
             success "[#{id}] Action Completed '#{address}'"
             payload = response[:payload] || {}
             block.call(Factor::Common.simple_object_convert(payload)) if block
-            keep_looping=false
+            
+            Thread.new do
+              service_instance.stop_action(address.id)
+            end
           end
         end
 
         success "[#{id}] Action Starting '#{address}'"
         listener_instance = service_instance.call_action(address.id, params_and_creds)
-
-        begin
-          sleep 0.1
-        end while keep_looping
-        service_instance.stop_action(address.id)
         
-        payload
+        exec
       end
 
       def success(message)
@@ -124,6 +114,7 @@ module Factor
       def initialize_service_instance(service_ref, params={})
         address             = ServiceAddress.new(service_ref)
         service_credentials = @credentials[address.service.to_sym] || {}
+        exec                = ExecHandler.new(service_ref, params)
 
         info "Loading #{address.to_s} (#{address.require_path})"
         load_connector(address)
@@ -133,7 +124,7 @@ module Factor
 
         params_and_creds = Factor::Common::DeepStruct.new(params.merge(service_credentials)).to_h
 
-        [address, service_instance, params_and_creds]
+        [address, service_instance, exec, params_and_creds]
       end
 
       def nap
