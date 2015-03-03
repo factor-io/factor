@@ -37,6 +37,10 @@ module Factor
         self.join('::')
       end
 
+      def require_path
+        "factor/connector/#{self.namespace.join('_')}"
+      end
+
       def workflow_address
         workflow_service_map = self[1..-1]
         ServiceAddress.new workflow_service_map
