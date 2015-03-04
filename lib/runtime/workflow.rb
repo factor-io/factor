@@ -75,6 +75,7 @@ module Factor
           when 'fail'
             error_message = response[:message] || "unknown error"
             error "[#{id}] Action Failed '#{address}': #{error_message}"
+            exec.fail_block.call(message) if exec.fail_block
             Thread.new do
               service_instance.stop_action(address.id)
             end
