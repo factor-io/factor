@@ -75,7 +75,9 @@ module Factor
           when 'fail'
             error_message = response[:message] || "unknown error"
             error "[#{id}] Action Failed '#{address}': #{error_message}"
-            service_instance.stop_action(address.id)
+            Thread.new do
+              service_instance.stop_action(address.id)
+            end
           when 'return'
             success "[#{id}] Action Completed '#{address}'"
             payload = response[:payload] || {}
