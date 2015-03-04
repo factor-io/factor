@@ -7,6 +7,8 @@ require 'common/deep_struct'
 require 'runtime/service_address'
 require 'runtime/exec_handler'
 
+require 'factor-connector-api'
+
 module Factor
   module Runtime
     class Workflow
