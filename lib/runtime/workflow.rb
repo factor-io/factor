@@ -50,7 +50,7 @@ module Factor
             message = response[:message] || 'unkonwn error'
             error "[#{id}] Listener Failed '#{address}': #{message}"
             
-            exec.fail_block.call(message) if exec.fail_bock
+            exec.fail_block.call(message) if exec.fail_block
           end
         end
 
