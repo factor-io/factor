@@ -3,8 +3,10 @@
 require 'codeclimate-test-reporter'
 require 'stringio'
 
-CodeClimate::TestReporter.start do
-  add_filter '/spec/'
+if ENV['CODECLIMATE_REPO_TOKEN']
+  CodeClimate::TestReporter.start do
+    add_filter '/spec/'
+  end
 end
 
 $LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
