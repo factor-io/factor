@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
 require 'commands/base'
-require 'runtime/workflow'
+require 'workflow/runtime'
 
 module Factor
   module Commands
@@ -107,7 +107,7 @@ module Factor
         logger.info "Setting up workflow processor"
         begin
           credential_settings = configatron.credentials.to_hash
-          runtime = Factor::Runtime::Workflow.new(credential_settings, logger: logger)
+          runtime = Factor::Workflow::Runtime.new(credential_settings, logger: logger)
         rescue => ex
           message = "Couldn't setup workflow process"
           logger.error message:message, exception:ex

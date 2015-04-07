@@ -1,5 +1,5 @@
 module Factor
-  module Runtime
+  module Workflow
     class ExecHandler
       attr_accessor :params, :service, :fail_block
 

@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
 require 'commands/base'
-require 'runtime/workflow'
+require 'workflow/runtime'
 
 module Factor
   module Commands
@@ -17,7 +17,7 @@ module Factor
         load_config(config_settings)
 
         credential_settings = configatron.credentials.to_hash
-        runtime = Factor::Runtime::Workflow.new(credential_settings, logger: logger)
+        runtime = Factor::Workflow::Runtime.new(credential_settings, logger: logger)
 
         begin
           params = JSON.parse(args[1] || '{}')

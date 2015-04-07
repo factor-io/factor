@@ -4,12 +4,12 @@ require 'securerandom'
 
 require 'commands/base'
 require 'common/deep_struct'
-require 'runtime/service_address'
-require 'runtime/exec_handler'
+require 'workflow/service_address'
+require 'workflow/exec_handler'
 
 module Factor
-  module Runtime
-    class Workflow
+  module Workflow
+    class Runtime
       attr_accessor :name, :description, :id, :credentials
 
       def initialize(credentials, options={})

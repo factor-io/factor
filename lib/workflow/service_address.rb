@@ -1,5 +1,5 @@
 module Factor
-  module Runtime
+  module Workflow
     class ServiceAddress < Array
       def initialize(service_ref)
         if service_ref.is_a?(String)
