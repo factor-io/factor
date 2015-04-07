@@ -36,18 +36,13 @@ describe Factor::Connector::Runtime do
 
   it 'can run action and handle parameters' do
     
-    # @runtime.run([:action], foo:'bar')
+    @runtime.run([:action], foo:'bar')
 
-    # sleep 2
-    # wait_for(@runtime.last_message[:message]).to eq('info')
-
-    # expect(response).to be_a(Hash)
-    # expect(response.keys).to include(:foo)
-    # expect(response.keys).to include(:bar)
-    # expect(response.keys).to include(:some_var)
-    # expect(response[:foo]).to eq('bar')
-    # expect(response[:bar]).to eq('bar')
-    # expect(response[:some_var]).to eq('some_var')
+    @runtime.expect_info 'info'
+    @runtime.expect_warn 'warn'
+    @runtime.expect_response a_hash_including(foo:'bar')
+    @runtime.expect_response a_hash_including(bar:'bar')
+    @runtime.expect_response a_hash_including(some_var: 'some_var')
   end
 
   it 'can fail an action' do
