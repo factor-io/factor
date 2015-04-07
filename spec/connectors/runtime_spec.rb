@@ -46,9 +46,8 @@ describe Factor::Connector::Runtime do
   end
 
   it 'can fail an action' do
-    # expect {
-    #   @runtime.run([:action_fail])
-    # }.to raise_error(Factor::Connector::Error)
+    @runtime.run([:action_fail], foo:'bar')
+    @runtime.expect_fail('Something broke')
   end
   
 end
