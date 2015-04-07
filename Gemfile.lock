@@ -5,7 +5,6 @@ PATH
       colored (~> 1.2)
       commander (~> 4.3.0)
       configatron (~> 4.5.0)
-      factor-connector-api (~> 0.0.14)
       liquid (~> 3.0.1)
       rest-client (~> 1.8.0)
 
@@ -25,8 +24,6 @@ GEM
     docile (1.1.5)
     domain_name (0.5.23)
       unf (>= 0.0.5, < 1.0.0)
-    factor-connector-api (0.0.14)
-      celluloid (~> 0.16.0)
     ffi (1.9.8)
     formatador (0.2.5)
     guard (2.12.5)
