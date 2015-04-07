@@ -48,7 +48,6 @@ describe Factor::Connector::Runtime do
 
   describe 'Actions' do
     it 'can run and handle parameters' do
-      
       @runtime.run([:action], foo:'bar')
 
       @runtime.expect_info 'info'
@@ -65,7 +64,7 @@ describe Factor::Connector::Runtime do
   end
 
   describe 'Listeners' do
-    it 'can start and stop' do
+    it 'can start, stop, trigger and handle parameters' do
       @runtime.start_listener([:listener], a:'b')
       @runtime.expect_response started:'foo', c:'b'
       @runtime.expect_trigger foo:'bar', a:'b'
