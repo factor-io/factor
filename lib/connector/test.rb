@@ -33,6 +33,10 @@ module Factor
         expect_hash(type:'response', data:data)
       end
 
+      def expect_trigger(data={})
+        expect_hash(type:'trigger', data:data)
+      end
+
       def expect_fail(message=nil)
         hash = {type:'fail'}
         hash[:message] = message if message

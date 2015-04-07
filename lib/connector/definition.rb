@@ -75,6 +75,11 @@ module Factor
         instance_variable_set('@listeners', listeners)
       end
 
+      def trigger(data)
+        changed
+        notify_observers type:'trigger', data:data
+      end
+
       def respond(data)
         changed
         notify_observers type:'response', data: data
