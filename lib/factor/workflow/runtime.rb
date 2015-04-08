@@ -2,10 +2,10 @@
 
 require 'securerandom'
 
-require 'commands/base'
-require 'common/deep_struct'
-require 'workflow/service_address'
-require 'workflow/exec_handler'
+require 'factor/commands/base'
+require 'factor/common/deep_struct'
+require 'factor/workflow/service_address'
+require 'factor/workflow/exec_handler'
 
 module Factor
   module Workflow

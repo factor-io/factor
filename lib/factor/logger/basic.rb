@@ -1,4 +1,4 @@
-require_relative './logger.rb'
+require 'factor/logger/logger'
 
 module Factor
   module Log

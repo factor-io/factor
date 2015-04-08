@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-require 'connector/definition'
-require 'connector/registry'
+require 'factor/connector/definition'
+require 'factor/connector/registry'
 
 describe Factor::Connector::Registry do
   before do

@@ -5,7 +5,7 @@ require 'rest-client'
 require 'liquid'
 require 'json'
 
-require 'commands/base'
+require 'factor/commands/base'
 
 module Factor
   module Commands

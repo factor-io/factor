@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-require 'common/deep_struct'
+require 'factor/common/deep_struct'
 
 describe Factor::Common::DeepStruct do
   it 'handles depth 1 Hash' do

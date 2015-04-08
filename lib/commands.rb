@@ -3,9 +3,9 @@
 require 'commander/import'
 
 require 'factor/version'
-require 'commands/workflow_command'
-require 'commands/registry_command'
-require 'commands/run_command'
+require 'factor/commands/workflow_command'
+require 'factor/commands/registry_command'
+require 'factor/commands/run_command'
 
 program :name, 'Factor.io Server'
 program :version, Factor::VERSION

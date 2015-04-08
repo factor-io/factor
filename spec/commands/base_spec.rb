@@ -4,7 +4,7 @@ require 'spec_helper'
 require 'tempfile'
 require 'yaml'
 require 'commander'
-require 'commands/base'
+require 'factor/commands/base'
 
 describe Factor::Commands::Command do
   before :each do

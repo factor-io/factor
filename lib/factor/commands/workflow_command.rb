@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
-require 'commands/base'
-require 'workflow/runtime'
+require 'factor/commands/base'
+require 'factor/workflow/runtime'
 
 module Factor
   module Commands

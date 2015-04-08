@@ -1,6 +1,6 @@
 require 'observer'
 
-require 'connector/error'
+require 'factor/connector/error'
 
 module Factor
   module Connector

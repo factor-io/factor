@@ -2,9 +2,9 @@
 
 require 'spec_helper'
 
-require 'connector/definition'
-require 'connector/runtime'
-require 'connector/test'
+require 'factor/connector/definition'
+require 'factor/connector/runtime'
+require 'factor/connector/test'
 
 describe Factor::Connector::Runtime do
   before do

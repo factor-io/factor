@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-require 'connector/definition'
+require 'factor/connector/definition'
 
 describe Factor::Connector::Definition do
   before do

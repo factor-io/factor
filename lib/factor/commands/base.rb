@@ -4,7 +4,7 @@ require 'colored'
 require 'configatron'
 require 'yaml'
 require 'fileutils'
-require 'logger/basic'
+require 'factor/logger/basic'
 
 module Factor
   module Commands
