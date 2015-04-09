@@ -49,6 +49,11 @@ describe Factor::Workflow::ServiceAddress do
     expect(address.resource).to eq([:b,:c])
   end
 
+  it 'can get the path' do
+    address = Factor::Workflow::ServiceAddress.new('a::b::c::d')
+    expect(address.path).to eq([:b,:c, :d])
+  end
+
   it 'fails to get resource path if undefined' do
     address = Factor::Workflow::ServiceAddress.new('a::b')
     expect{

@@ -41,6 +41,10 @@ module Factor
         raise "No resource path defined, address must contain at least three parts" unless self.length >= 3
         self[1..-2]
       end
+
+      def path
+        self[1..-1]
+      end
     end
   end
 end
