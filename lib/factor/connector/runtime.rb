@@ -28,6 +28,9 @@ module Factor
       end
 
       def run(address, options={})
+        raise ArgumentError, "Address must be an Array" unless address.is_a?(Array)
+        raise ArgumentError, "Address must be an Array of Symbols" unless address.all?{|a| a.is_a?(Symbol)}
+        raise ArgumentError, "Address must not be empty" unless address.length > 0
         @address = address
         actions = @connector.class.instance_variable_get('@actions')
         action  = actions[address]

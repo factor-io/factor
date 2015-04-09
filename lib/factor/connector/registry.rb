@@ -11,7 +11,7 @@ module Factor
           end
         end
         raise "No definition found with id #{id}" unless get_class
-        self.class.const_get(get_class).new
+        self.class.const_get(get_class)
       end
     end
   end
