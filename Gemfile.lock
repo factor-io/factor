@@ -1,12 +1,14 @@
 PATH
   remote: .
   specs:
-    factor (0.6.12)
+    factor (2.9.02)
       colored (~> 1.2)
       commander (~> 4.3.0)
       configatron (~> 4.5.0)
       liquid (~> 3.0.1)
       rest-client (~> 1.8.0)
+      rspec (~> 3.2.0)
+      wrong (~> 0.7.1)
 
 GEM
   remote: https://rubygems.org/
@@ -119,5 +121,3 @@ DEPENDENCIES
   guard (~> 2.12.5)
   guard-rspec (~> 4.5.0)
   rake (~> 10.4.2)
-  rspec (~> 3.2.0)
-  wrong (~> 0.7.1)
