@@ -9,6 +9,7 @@ module Factor
       def initialize(connector)
         @connector = connector.new
         @connector.add_observer(self, :log)
+        @logs = []
       end
 
       def callback=(block)
@@ -20,7 +21,6 @@ module Factor
       end
 
       def log(params)
-        @logs ||= []
         @logs << params
         changed
         notify_observers params
