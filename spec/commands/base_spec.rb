@@ -35,7 +35,7 @@ describe Factor::Commands::Command do
       exception_string = 'Something be busted'
       output = capture_stdout do
         begin
-          fail ArgumentError, exception_string
+          raise ArgumentError, exception_string
         rescue => ex
           @command.logger.error message: test_string, exception:ex
         end
