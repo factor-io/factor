@@ -1,6 +1,5 @@
 # encoding: UTF-8
 
-require 'colored'
 require 'configatron'
 require 'yaml'
 require 'fileutils'
