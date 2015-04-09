@@ -6,19 +6,20 @@ require 'factor/commands/base'
 require 'factor/common/deep_struct'
 require 'factor/workflow/service_address'
 require 'factor/workflow/exec_handler'
+require 'factor/connector/runtime'
+require 'factor/connector/registry'
+require 'factor/connector/definition'
 
 module Factor
   module Workflow
     class Runtime
-      attr_accessor :name, :description, :id, :credentials
+      attr_accessor :name, :description, :credentials
 
       def initialize(credentials, options={})
-        @workflow_spec  = {}
-        @workflows      = {}
-        @reconnect      = true
-        @logger         = options[:logger] if options[:logger]
-
-        @credentials = credentials
+        @workflow_spec = {}
+        @workflows     = {}
+        @logger        = options[:logger] if options[:logger]
+        @credentials   = credentials
       end
 
       def load(workflow_definition)
@@ -28,10 +29,9 @@ module Factor
       end
 
       def listen(service_ref, params = {}, &block)
-        address, service_instance, exec, params_and_creds = initialize_service_instance(service_ref,params)
-        id = SecureRandom.hex(4)
+        address, connector_runtime, exec, params_and_creds = initialize_connector_runtime(service_ref,params)
 
-        service_instance.callback = proc do |response|
+        connector_runtime.callback = proc do |response|
           message = response[:message]
           type    = response[:type]
           
@@ -55,17 +55,17 @@ module Factor
         end
 
         success "[#{id}] Listener Starting '#{address}'"
-        listener_instance = service_instance.start_listener(address.id, params)
+        listener_instance = connector_runtime.start_listener(address.id, params)
 
         success "[#{id}] Listener Stopped '#{address}'"
         exec
       end
 
       def run(service_ref, params = {}, &block)
-        address, service_instance, exec, params_and_creds = initialize_service_instance(service_ref,params)
+        address, connector_runtime, exec, params_and_creds = initialize_connector_runtime(service_ref,params)
         id = SecureRandom.hex(4)
 
-        service_instance.callback = Proc.new do |response|
+        connector_runtime.callback = Proc.new do |response|
           message = response[:message]
           type    = response[:type]
 
@@ -76,23 +76,15 @@ module Factor
             error_message = response[:message] || "unknown error"
             error "[#{id}] Action Failed '#{address}': #{error_message}"
             exec.fail_block.call(message) if exec.fail_block
-            Thread.new do
-              service_instance.stop_action(address.id)
-            end
-          when 'return'
+          when 'response'
             success "[#{id}] Action Completed '#{address}'"
             payload = response[:payload] || {}
             block.call(Factor::Common.simple_object_convert(payload)) if block
-            
-            Thread.new do
-              service_instance.stop_action(address.id)
-            end
           end
         end
 
         success "[#{id}] Action Starting '#{address}'"
-        listener_instance = service_instance.call_action(address.id, params_and_creds)
-        
+        listener_instance = connector_runtime.run(address.path, params_and_creds)
         exec
       end
 
@@ -114,20 +106,15 @@ module Factor
 
       private
 
-      def initialize_service_instance(service_ref, params={})
-        address             = ServiceAddress.new(service_ref)
+      def initialize_connector_runtime(service_ref, params={})
+        address             = Factor::Workflow::ServiceAddress.new(service_ref)
         service_credentials = @credentials[address.service.to_sym] || {}
-        exec                = ExecHandler.new(service_ref, params)
+        exec                = Factor::Workflow::ExecHandler.new(service_ref, params)
+        connector_class     = Factor::Connector::Registry.get(address.service)
+        connector_runtime   = Factor::Connector::Runtime.new(connector_class)
+        params_and_creds    = Factor::Common::DeepStruct.new(params.merge(service_credentials)).to_h
 
-        info "Loading #{address.to_s} (#{address.require_path})"
-        load_connector(address)
-
-        service_manager = Factor::Connector.get_service_manager(address.service)
-        service_instance = service_manager.instance
-
-        params_and_creds = Factor::Common::DeepStruct.new(params.merge(service_credentials)).to_h
-
-        [address, service_instance, exec, params_and_creds]
+        [address, connector_runtime, exec, params_and_creds]
       end
 
       def nap
@@ -137,16 +124,6 @@ module Factor
           end while true
         rescue Interrupt
         end
-      end
-
-      def load_connector(address)
-        if ENV['FACTOR_LOCAL_CONNECTORS_PATH']
-          require_relative File.expand_path("../connector-#{address.service}/lib/#{address.require_path}.rb")
-        else
-          require address.require_path
-        end
-      rescue
-        error "No such Listener, #{address.to_s}"
       end
 
       def log_callback(message,status)
