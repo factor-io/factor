@@ -7,6 +7,9 @@ require 'factor/connector/runtime'
 require 'factor/connector/test'
 
 describe Factor::Connector::Runtime do
+  include Factor::Connector::Test
+
+
   before do
     class MyDef < Factor::Connector::Definition
       id :my_def
@@ -50,28 +53,25 @@ describe Factor::Connector::Runtime do
     it 'can run and handle parameters' do
       @runtime.run([:action], foo:'bar')
 
-      @runtime.expect_info 'info'
-      @runtime.expect_warn 'warn'
-      @runtime.expect_response a_hash_including(foo:'bar')
-      @runtime.expect_response a_hash_including(bar:'bar')
-      @runtime.expect_response a_hash_including(some_var: 'some_var')
+      expect(@runtime).to log info:'info'
+      expect(@runtime).to log warn:'warn'
+      expect(@runtime).to respond foo:'bar', bar:'bar', some_var:'some_var'
     end
 
     it 'can fail' do
       @runtime.run([:action_fail], foo:'bar')
-      @runtime.expect_fail('Something broke')
+      expect(@runtime).to fail 'Something broke'
     end
   end
 
   describe 'Listeners' do
     it 'can start, stop, trigger and handle parameters' do
       @runtime.start_listener([:listener], a:'b')
-      @runtime.expect_response started:'foo', c:'b'
-      @runtime.expect_trigger foo:'bar', a:'b'
+      expect(@runtime).to respond started:'foo', c:'b'
+      expect(@runtime).to trigger foo:'bar', a:'b'
       @runtime.stop_listener
-      @runtime.expect_info 'killing'
-      @runtime.expect_response done:true
+      expect(@runtime).to log info:'killing'
+      expect(@runtime).to respond done:true
     end
   end
-  
 end

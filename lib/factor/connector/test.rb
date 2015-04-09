@@ -1,75 +1,153 @@
 require 'rspec'
 require 'rspec/expectations'
 require 'rspec/matchers'
-require 'wrong/adapters/rspec'
+require 'wrong'
 
 module Factor
   module Connector
+    module Test
 
+      RSpec::Matchers.define :log do |expected|
+        match do |actual|
+          begin
+            Wrong.eventually do
+              actual.logs.any? do |log|
+                case expected.class.name
+                when 'Hash'
+                  status = expected.keys.first.to_s
+                  message = expected.values.first
+                  log[:type]=='log' && log[:status]==status && log[:message]==message
+                when 'String'
+                  log[:type]=='log' && log[:message]==expected
+                when 'Symbol'
+                  log[:type]=='log' && log[:status]==expected.to_s
+                when 'NilClass'
+                  log[:type]=='log'
+                else
+                  false
+                end
+              end
+            end
+            true
+          rescue => ex
+            false
+          end
+        end
 
-    class Runtime
-      include Wrong
-      include RSpec::Matchers
-
-      attr_accessor :responses, :last_message
-
-      def expect_log(message)
-        expect_hash(type:'log', message:message)
-      end
-
-      def expect_info(message)
-        expect_hash(type:'log', status:'info', message:message)
-      end
-
-      def expect_warn(message)
-        expect_hash(type:'log', status:'warn', message:message)
-      end
-
-      def expect_error(message)
-        expect_hash(type:'log', status:'error', message:message)
-      end
-
-      def expect_response(data={})
-        expect_hash(type:'response', data:data)
-      end
-
-      def expect_trigger(data={})
-        expect_hash(type:'trigger', data:data)
-      end
-
-      def expect_fail(message=nil)
-        hash = {type:'fail'}
-        hash[:message] = message if message
-        expect_hash(hash)
-      end
-
-      def expect_hash(hash={})
-        set_callback
-        
-        eventually do
-          expect(@responses).to include( a_hash_including(hash) )
+        failure_message do
+          case expected.class.name
+          when 'Hash'
+            status = expected.keys.first.to_s
+            message = expected.values.first
+            "expected #{actual.logs} to log '#{status}' message '#{message}'"
+          when 'Symbol'
+            "expected #{actual.logs} to log '#{status}'"
+          when 'String'
+            "expected #{actual.logs} to log message '#{expected}'"
+          when 'NilClass'
+            "expected #{actual.logs} to log a message"
+          else
+            "#{expected.class} is an unrecognizable matcher type"
+          end
         end
       end
 
-      def expect_eventually(options, something)
-        set_callback
-        
-        options={}
-        eventually(options) do
-          expect(@responses).to include( something )
+      RSpec::Matchers.define :respond do |expected|
+        match do |actual|
+          begin
+            Wrong.eventually do
+              actual.logs.any? do |log|
+                case expected.class.name
+                when 'Hash'
+                  log[:type]=='response' && log[:data]==expected
+                when 'NilClass'
+                  log[:type]=='response'
+                else
+                  false
+                end
+              end
+            end
+            true
+          rescue => ex
+            false
+          end
+        end
+
+        failure_message do
+          case expected.class.name
+          when 'Hash'
+            "expected #{actual.logs} to respond with data '#{expected}'"
+          when 'NilClass'
+            "expected #{actual.logs} to respond"
+          else
+            "#{expected.class} is an unrecognizable matcher type"
+          end
         end
       end
 
-      private
+      RSpec::Matchers.define :trigger do |expected|
+        match do |actual|
+          begin
+            Wrong.eventually do
+              actual.logs.any? do |log|
+                case expected.class.name
+                when 'Hash'
+                  log[:type]=='trigger' && log[:data]==expected
+                when 'NilClass'
+                  log[:type]=='trigger'
+                else
+                  false
+                end
+              end
+            end
+            true
+          rescue => ex
+            false
+          end
+        end
 
-      def set_callback
-        @responses ||= []
-        @last_message ||= ''
-        unless self.callback
-          callback do |data|
-            @responses << data
-            @last_message = data
-          end  
+        failure_message do
+          case expected.class.name
+          when 'Hash'
+            "expected #{actual.logs} to respond with data '#{expected}'"
+          when 'NilClass'
+            "expected #{actual.logs} to respond"
+          else
+            "#{expected.class} is an unrecognizable matcher type"
+          end
+        end
+      end
+
+      RSpec::Matchers.define :fail do |expected|
+        match do |actual|
+          begin
+            Wrong.eventually do
+              actual.logs.any? do |log|
+                case expected.class.name
+                when 'String'
+                  log[:type]=='fail' && log[:message]==expected
+                when 'NilClass'
+                  log[:type]=='fail'
+                else
+                  false
+                end
+              end
+            end
+            true
+          rescue => ex
+            false
+          end
+        end
+
+        failure_message do
+          case expected.class.name
+          when 'String'
+            "expected #{actual.logs} to fail with message '#{expected}'"
+          when 'NilClass'
+            "expected #{actual.logs} to fail"
+          else
+            "#{expected.class} is an unrecognizable matcher type"
+          end
         end
       end
     end

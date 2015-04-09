@@ -4,6 +4,7 @@ module Factor
   module Connector
     class Runtime
       include Observable
+      attr_accessor :logs
 
       def initialize(connector)
         @connector = connector.new
@@ -19,6 +20,8 @@ module Factor
       end
 
       def log(params)
+        @logs ||= []
+        @logs << params
         changed
         notify_observers params
         @callback.call(params) if @callback
