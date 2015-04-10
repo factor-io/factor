@@ -55,7 +55,7 @@ module Factor
         end
 
         success "[#{id}] Listener Starting '#{address}'"
-        listener_instance = connector_runtime.start_listener(address.id, params)
+        listener_instance = connector_runtime.start_listener(address.path, params)
 
         success "[#{id}] Listener Stopped '#{address}'"
         exec
