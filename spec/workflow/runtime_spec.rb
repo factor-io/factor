@@ -3,11 +3,15 @@
 require 'spec_helper'
 
 require 'factor/workflow/runtime'
+require 'factor/workflow/test'
 require 'factor/connector/definition'
 require 'factor/connector/registry'
+require 'factor/logger/test'
 
 describe Factor::Workflow::Runtime do
-  before do
+  include Factor::Workflow::Test
+
+  before :all do
     class MyDef < Factor::Connector::Definition
       id :my_def
       def initialize
@@ -41,17 +45,31 @@ describe Factor::Workflow::Runtime do
         end
       end
     end
+    @logger  = Factor::Log::TestLogger.new
+    @runtime = Factor::Workflow::Runtime.new({}, logger:@logger)
+  end
+
+  before :each do
+    @logger.clear
   end
 
   it 'can run a connector action' do
-    logger = Factor::Log::BasicLogger.new
-    runtime = Factor::Workflow::Runtime.new({}, logger:logger)
+    @runtime.run 'my_def::action', foo:'sweet'
 
-    runtime.run 'my_def::action', foo:'sweet'
+    expect(@logger).to log success:'Starting'
+    expect(@logger).to log info:'info'
+    expect(@logger).to log warn:'warn'
+    expect(@logger).to log error:'error'
+    expect(@logger).to log success:'Completed'
+  end
 
-    # Here we need to have the expect blocks that listen for the output of runtime.run
+  it 'can fail a connector action' do
+    @runtime.run 'my_def::action_fail', foo:'sweet'
+    
+    expect(@logger).to log error:'Failed: Something broke'
   end
 
   it 'can run a workflow' do
+
   end
 end
