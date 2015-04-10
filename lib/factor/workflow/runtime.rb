@@ -1,7 +1,5 @@
 # encoding: UTF-8
 
-require 'securerandom'
-
 require 'factor/commands/base'
 require 'factor/common/deep_struct'
 require 'factor/workflow/service_address'
@@ -20,6 +18,7 @@ module Factor
         @workflows     = {}
         @logger        = options[:logger] if options[:logger]
         @credentials   = credentials
+        @workflow_filename = options[:workflow_filename]
       end
 
       def load(workflow_definition)
@@ -30,7 +29,9 @@ module Factor
 
       def listen(service_ref, params = {}, &block)
         address, connector_runtime, exec, params_and_creds = initialize_connector_runtime(service_ref,params)
-        id = SecureRandom.hex(4)
+        line = caller.first.split(":")[1]
+        file_id = @workflow_filename ? "#{@workflow_filename}:#{line}" : "line:#{line}"
+        id = "#{service_ref}(#{file_id})"
 
         connector_runtime.callback = proc do |response|
           message = response[:message]
@@ -38,33 +39,35 @@ module Factor
           
           case type
           when 'return'
-            success "[#{id}] Listener Started '#{address}'"
+            success "[#{id}] Started"
           when 'start_workflow'
             payload = response[:payload]
 
-            success "[#{id}] Listener Triggered '#{address}'"
+            success "[#{id}] Triggered"
             block.call(Factor::Common.simple_object_convert(payload)) if block
 
           when 'log'
             log_callback("  [#{id}] #{message}",response[:status])
           when 'fail'
             message = response[:message] || 'unkonwn error'
-            error "[#{id}] Listener Failed '#{address}': #{message}"
+            error "[#{id}] Failed: #{message}"
             
             exec.fail_block.call(message) if exec.fail_block
           end
         end
 
-        success "[#{id}] Listener Starting '#{address}'"
+        success "[#{id}] Starting"
         listener_instance = connector_runtime.start_listener(address.path, params)
 
-        success "[#{id}] Listener Stopped '#{address}'"
+        success "[#{id}] Stopped"
         exec
       end
 
       def run(service_ref, params = {}, &block)
         address, connector_runtime, exec, params_and_creds = initialize_connector_runtime(service_ref,params)
-        id = SecureRandom.hex(4)
+        line = caller.first.split(":")[1]
+        file_id = @workflow_filename ? "#{@workflow_filename}:#{line}" : "line:#{line}"
+        id = "#{service_ref}(#{file_id})"
 
         connector_runtime.callback = Proc.new do |response|
           message = response[:message]
@@ -75,16 +78,16 @@ module Factor
             log_callback("  [#{id}] #{message}",response[:status])
           when 'fail'
             error_message = response[:message] || "unknown error"
-            error "[#{id}] Action Failed '#{address}': #{error_message}"
+            error "[#{id}] Failed: #{error_message}"
             exec.fail_block.call(message) if exec.fail_block
           when 'response'
-            success "[#{id}] Action Completed '#{address}'"
+            success "[#{id}] Completed"
             payload = response[:payload] || {}
             block.call(Factor::Common.simple_object_convert(payload)) if block
           end
         end
 
-        success "[#{id}] Action Starting '#{address}'"
+        success "[#{id}] Starting"
         listener_instance = connector_runtime.run(address.path, params_and_creds)
         exec
       end

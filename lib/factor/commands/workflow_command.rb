@@ -100,14 +100,14 @@ module Factor
           return
         end
 
-        @workflows[workflow_filename] = load_workflow_from_definition(workflow_definition)
+        @workflows[workflow_filename] = load_workflow_from_definition(workflow_definition, File.basename(workflow_filename))
       end
 
-      def load_workflow_from_definition(workflow_definition)
+      def load_workflow_from_definition(workflow_definition, filename)
         logger.info "Setting up workflow processor"
         begin
           credential_settings = configatron.credentials.to_hash
-          runtime = Factor::Workflow::Runtime.new(credential_settings, logger: logger)
+          runtime = Factor::Workflow::Runtime.new(credential_settings, logger: logger, workflow_filename: filename)
         rescue => ex
           message = "Couldn't setup workflow process"
           logger.error message:message, exception:ex
