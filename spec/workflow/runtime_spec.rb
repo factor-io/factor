@@ -28,9 +28,7 @@ describe Factor::Workflow::Runtime do
         start do |data|
           t = Thread.new do
             begin
-              sleep 0.1
               trigger foo:'bar', a:data[:a]
-              sleep 5
             end while true
           end
 
