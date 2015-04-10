@@ -41,7 +41,7 @@ module Factor
             message = expected.values.first
             "expected #{actual.logs} to log '#{status}' message '#{message}'"
           when 'Symbol'
-            "expected #{actual.logs} to log '#{status}'"
+            "expected #{actual.logs} to log '#{expected}'"
           when 'String'
             "expected #{actual.logs} to log message '#{expected}'"
           when 'NilClass'
