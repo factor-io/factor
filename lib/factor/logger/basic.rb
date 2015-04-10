@@ -45,7 +45,7 @@ module Factor
         formated_section = section.to_s.upcase.center(10)
         case section.to_sym
         when :error then Rainbow(formated_section).red
-        when :info then Rainbow(formated_section).bold
+        when :info then Rainbow(formated_section).white
         when :warn then Rainbow(formated_section).yellow
         when :success then Rainbow(formated_section).green
         else formated_section
