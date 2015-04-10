@@ -30,6 +30,7 @@ module Factor
 
       def listen(service_ref, params = {}, &block)
         address, connector_runtime, exec, params_and_creds = initialize_connector_runtime(service_ref,params)
+        id = SecureRandom.hex(4)
 
         connector_runtime.callback = proc do |response|
           message = response[:message]
