@@ -28,7 +28,7 @@ module Factor
       end
 
       def self.action(action,&block)
-        resources = @resources || []
+        resources = instance_variable_get('@resources') || []
         address   = resources + [action]
         actions   = instance_variable_get('@actions') || {}
 
@@ -37,7 +37,7 @@ module Factor
       end
 
       def self.listener(listener,&block)
-        resources     = @resources || []
+        resources     = instance_variable_get('@resources') || []
         address       = resources + [listener]
         start_address = resources + [listener] + [:start]
         stop_address  = resources + [listener] + [:stop]
@@ -56,7 +56,7 @@ module Factor
       def self.start(&block)
         listener = instance_variable_get('@listener')
         raise ArgumentError, 'Start block must be defined within a Listener' unless listener
-        resources = @resources || []
+        resources = instance_variable_get('@resources') || []
         address = resources + [listener] + [:start]
 
         listeners = instance_variable_get('@listeners') || {}
@@ -67,7 +67,7 @@ module Factor
       def self.stop(&block)
         listener = instance_variable_get('@listener')
         raise ArgumentError, 'Stop block must be defined within a Listener' unless listener
-        resources = @resources || []
+        resources = instance_variable_get('@resources') || []
         address = resources + [listener] + [:stop]
 
         listeners = instance_variable_get('@listeners') || {}
