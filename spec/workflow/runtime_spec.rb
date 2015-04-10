@@ -9,8 +9,6 @@ require 'factor/connector/registry'
 require 'factor/logger/test'
 
 describe Factor::Workflow::Runtime do
-  include Factor::Workflow::Test
-
   before :all do
     class MyDef < Factor::Connector::Definition
       id :my_def

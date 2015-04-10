@@ -7,7 +7,7 @@ module Factor
   module Connector
     module Test
 
-      RSpec::Matchers.define :log do |expected|
+      RSpec::Matchers.define :message do |expected|
         match do |actual|
           begin
             Wrong.eventually do

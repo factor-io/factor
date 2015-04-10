@@ -9,7 +9,6 @@ require 'factor/connector/test'
 describe Factor::Connector::Runtime do
   include Factor::Connector::Test
 
-
   before do
     class MyDef < Factor::Connector::Definition
       id :my_def
@@ -52,8 +51,8 @@ describe Factor::Connector::Runtime do
     it 'can run and handle parameters' do
       @runtime.run([:action], foo:'bar')
 
-      expect(@runtime).to log info:'info'
-      expect(@runtime).to log warn:'warn'
+      expect(@runtime).to message info:'info'
+      expect(@runtime).to message warn:'warn'
       expect(@runtime).to respond foo:'bar', bar:'bar', some_var:'some_var'
     end
 
@@ -69,7 +68,7 @@ describe Factor::Connector::Runtime do
       expect(@runtime).to respond started:'foo', c:'b'
       expect(@runtime).to trigger foo:'bar', a:'b'
       @runtime.stop_listener
-      expect(@runtime).to log info:'killing'
+      expect(@runtime).to message info:'killing'
       expect(@runtime).to respond done:true
     end
   end
