@@ -21,10 +21,10 @@ module Factor
         @workflow_filename = options[:workflow_filename]
       end
 
-      def load(workflow_definition)
+      def load(workflow_definition, take_nap=true)
         instance_eval(workflow_definition)
 
-        nap
+        nap if take_nap
       end
 
       def listen(service_ref, params = {}, &block)
@@ -38,9 +38,7 @@ module Factor
           type    = response[:type]
           
           case type
-          when 'return'
-            success "[#{id}] Started"
-          when 'start_workflow'
+          when 'trigger'
             payload = response[:payload]
 
             success "[#{id}] Triggered"
