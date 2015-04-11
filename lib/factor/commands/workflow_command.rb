@@ -82,7 +82,7 @@ module Factor
 
       def block_until_interupt
         logger.info 'Ctrl-c to exit'
-        Factor::Common.block_until_interupt
+        Factor::Common::Blocker.block_until_interrupt
         logger.info 'Exiting app...'
       end
 
