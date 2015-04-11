@@ -39,7 +39,7 @@ module Factor
           done = true
         end
 
-        Factor::Common::Blocker.block_until { done }
+        Factor::Common::Blocker.block_until_interrupt_or { done }
 
         logger.info 'Good bye!'
       end
