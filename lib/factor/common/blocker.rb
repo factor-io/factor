@@ -21,8 +21,8 @@ module Factor
         end
         
         begin
-          until_met = block.yield
           begin
+            until_met = block.yield
             sleep pause
           rescue Interrupt
             interrupted = true
