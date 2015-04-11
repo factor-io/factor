@@ -2,6 +2,7 @@
 
 require 'factor/commands/base'
 require 'factor/common/deep_struct'
+require 'factor/common/blocker'
 require 'factor/workflow/service_address'
 require 'factor/workflow/exec_handler'
 require 'factor/connector/runtime'
@@ -30,6 +31,8 @@ module Factor
         line = caller.first.split(":")[1]
         id   = @workflow_filename ? "#{service_ref}(#{@workflow_filename}:#{line})" : "#{service_ref}"
 
+        done = false
+
         connector_runtime.callback do |response|
           message = response[:message]
           type    = response[:type]
@@ -44,12 +47,20 @@ module Factor
             message = response[:message] || 'unkonwn error'
             error "[#{id}] Failed: #{message}"
             exec.fail_block.call(message) if exec.fail_block
+            done = true
           end
         end
 
         success "[#{id}] Starting"
         listener_instance = connector_runtime.start_listener(address.path, params)
         success "[#{id}] Started"
+
+        Factor::Common::Blocker.block_until_interrupt_or { done }
+
+        success "[#{id}] Stopping"
+        listener_instance = connector_runtime.stop_listener
+        success "[#{id}] Stopped"
+
         exec
       end
 
