@@ -1,4 +1,5 @@
 # encoding: UTF-8
+require 'json'
 
 require 'factor/commands/base'
 require 'factor/workflow/runtime'
