@@ -62,7 +62,7 @@ module Factor
         success "[#{id}] Started"
 
         Thread.new do
-          Factor::Common::Blocker.block_until_interrupt_or { done || @unload }
+          Factor::Common::Blocker.block_until { done || @unload }
 
           success "[#{id}] Stopping"
           listener_instance = connector_runtime.stop_listener
