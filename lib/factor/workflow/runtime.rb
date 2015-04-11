@@ -20,10 +20,16 @@ module Factor
         @logger            = options[:logger] if options[:logger]
         @credentials       = credentials
         @workflow_filename = options[:workflow_filename]
+        @unload            = false
       end
 
       def load(workflow_definition)
+        @unload = false
         instance_eval(workflow_definition)
+      end
+
+      def unload
+        @unload = true
       end
 
       def listen(service_ref, params = {}, &block)
@@ -55,11 +61,13 @@ module Factor
         listener_instance = connector_runtime.start_listener(address.path, params)
         success "[#{id}] Started"
 
-        Factor::Common::Blocker.block_until_interrupt_or { done }
+        Thread.new do
+          Factor::Common::Blocker.block_until_interrupt_or { done || @unload }
 
-        success "[#{id}] Stopping"
-        listener_instance = connector_runtime.stop_listener
-        success "[#{id}] Stopped"
+          success "[#{id}] Stopping"
+          listener_instance = connector_runtime.stop_listener
+          success "[#{id}] Stopped"
+        end
 
         exec
       end

@@ -80,5 +80,11 @@ describe Factor::Workflow::Runtime do
     expect(@logger).to log success: 'Triggered'
     expect(@logger).to log info: 'sweet'
     expect(@logger).to log success:'Started'
+
+    @runtime.unload
+
+    expect(@logger).to log success:'Stopping'
+    expect(@logger).to log success:'Stopped'
+
   end
 end
