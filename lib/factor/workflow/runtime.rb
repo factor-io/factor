@@ -112,15 +112,6 @@ module Factor
         [address, connector_runtime, exec, params_and_creds]
       end
 
-      def nap
-        begin
-          begin
-            sleep 0.1
-          end while true
-        rescue Interrupt
-        end
-      end
-
       def log_callback(message,status)
         case status
         when 'info' then info message

@@ -41,23 +41,6 @@ module Factor
           logger.info 'Good bye!'
         end
       end
-
-
-
-      private
-
-      def block_until_interupt
-        logger.info 'Ctrl-c to exit'
-        begin
-          loop do
-            sleep 1
-          end
-        rescue Interrupt
-          logger.info 'Exiting app...'
-        end
-      end
-
-
     end
   end
 end
