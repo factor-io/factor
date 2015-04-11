@@ -7,11 +7,6 @@ require 'factor/workflow/runtime'
 module Factor
   module Commands
     class RunCommand < Factor::Commands::Command
-      def initialize
-        @workflows = {}
-        super
-      end
-
       def run(args, options)
         config_settings = {}
         config_settings[:credentials] = options.credentials
