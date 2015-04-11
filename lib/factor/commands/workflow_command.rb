@@ -9,7 +9,7 @@ module Factor
     # Workflow is a Command to start the factor runtime from the CLI
     class WorkflowCommand < Factor::Commands::Command
       def initialize
-        @workflows = {}
+        @runtimes = []
         super
       end
 
@@ -22,7 +22,9 @@ module Factor
         load_config(config_settings)
         load_all_workflows(workflow_filename)
         block_until_interupt
+        @runtimes.each {|r| r.unload}
         logger.info 'Good bye!'
+        sleep 5
       end
 
       def cloud(args, options)
@@ -95,7 +97,7 @@ module Factor
           return
         end
 
-        @workflows[workflow_filename] = load_workflow_from_definition(workflow_definition, File.basename(workflow_filename))
+        load_workflow_from_definition(workflow_definition, File.basename(workflow_filename))
       end
 
       def load_workflow_from_definition(workflow_definition, filename)
@@ -103,6 +105,7 @@ module Factor
         begin
           credential_settings = configatron.credentials.to_hash
           runtime = Factor::Workflow::Runtime.new(credential_settings, logger: logger, workflow_filename: filename)
+          @runtimes << runtime
         rescue => ex
           message = "Couldn't setup workflow process"
           logger.error message:message, exception:ex
