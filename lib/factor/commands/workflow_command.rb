@@ -23,8 +23,8 @@ module Factor
         load_all_workflows(workflow_filename)
         block_until_interupt
         @runtimes.each {|r| r.unload}
-        logger.info 'Good bye!'
         sleep 5
+        logger.info 'Good bye!'
       end
 
       def cloud(args, options)
