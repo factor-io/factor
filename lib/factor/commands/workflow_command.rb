@@ -28,7 +28,7 @@ module Factor
         end
 
         logger.info "Sending stop signal"
-        @runtimes.each {|r| r.unload}
+        @runtimes.each {|r| r.unload if r.started? }
         Factor::Common::Blocker.block_until sleep:0.5 do 
           @runtimes.all?{|r| r.stopped?}
         end
