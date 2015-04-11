@@ -26,11 +26,4 @@ command 'run' do |c|
   c.when_called Factor::Commands::RunCommand, :run
 end
 
-command 'cloud' do |c|
-  c.syntax = 'factor host <account id> <workflow id> <api key>'
-  c.description = 'Start the Factor.io Server using your workflows and credentials from Factor.io Cloud'
-  c.option '--host URL', String, 'Use non-default Cloud service provider (e.g. pro server)'
-  c.when_called Factor::Commands::WorkflowCommand, :cloud
-end
-
 alias_command 's', 'server'

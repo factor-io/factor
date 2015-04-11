@@ -27,43 +27,8 @@ module Factor
         logger.info 'Good bye!'
       end
 
-      def cloud(args, options)
-        account_id, workflow_id, api_key = args
-        host        = (options.host || "https://factor.io").sub(/(\/)+$/,'')
 
-        if !api_key || !workflow_id || !account_id
-          logger.error "API Key, Worklfow ID and Acount ID are all required"
-          exit
         end
-
-        logger.info "Getting workflow (#{workflow_id}) from Factor.io Cloud"
-        begin
-          workflow_url = "#{host}/#{account_id}/workflows/#{workflow_id}.json?auth_token=#{api_key}"
-          raw_content = RestClient.get(workflow_url)
-          workflow_info = JSON.parse(raw_content)
-        rescue => ex
-          logger.error "Couldn't retreive workflow: #{ex.message}"
-          exit
-        end
-
-        workflow_definition = workflow_info["definition"]
-
-        logger.info "Getting credentials from Factor.io Cloud"
-        begin
-          credential_url = "#{host}/#{account_id}/credentials.json?auth_token=#{api_key}"
-          raw_content = RestClient.get(credential_url)
-          credentials = JSON.parse(raw_content)
-        rescue => ex
-          logger.error "Couldn't retreive workflow: #{ex.message}"
-          exit
-        end
-
-        configatron[:credentials].configure_from_hash(credentials)
-
-        @workflows[workflow_id] = load_workflow_from_definition(workflow_definition)
-
-        block_until_interupt
-
         logger.info 'Good bye!'
       end
 
