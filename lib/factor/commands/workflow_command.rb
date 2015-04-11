@@ -21,13 +21,14 @@ module Factor
 
         load_config(config_settings)
         load_all_workflows(workflow_filename)
-        block_until_interupt
+        
+        logger.info 'Ctrl-c to exit'
+        Factor::Common::Blocker.block_until_interrupt
+
+        logger.info "Sending stop signal"
         @runtimes.each {|r| r.unload}
-        Factor::Common::Blocker.block_until { @runtimes.all?{|r| r.stopped?} }
-        logger.info 'Good bye!'
-      end
-
-
+        Factor::Common::Blocker.block_until sleep:0.5 do 
+          @runtimes.all?{|r| r.stopped?}
         end
         logger.info 'Good bye!'
       end
@@ -45,12 +46,6 @@ module Factor
         else
           file_list.each { |filename| load_workflow(File.expand_path(filename)) }
         end
-      end
-
-      def block_until_interupt
-        logger.info 'Ctrl-c to exit'
-        Factor::Common::Blocker.block_until_interrupt
-        logger.info 'Exiting app...'
       end
 
       def load_workflow(workflow_filename)
