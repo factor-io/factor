@@ -1,25 +1,26 @@
 # encoding: UTF-8
+require 'forwardable'
 
 require 'factor/workflow/definition'
 
 module Factor
   module Workflow
     class Runtime
+      extend Forwardable
+
       def initialize(credentials, options={})
         @definition = Factor::Workflow::Definition.new(credentials, options)
       end
 
-      def load(workflow_definition)
-        @definition.instance_eval(workflow_definition)
-      end
+      def_delegator :@definition, :instance_eval, :load
+      def_delegator :@definition, :run, :run
+      def_delegator :@definition, :stop, :unload
+      def_delegator :@definition, :state, :state
+      def_delegator :@definition, :started?, :started?
+      def_delegator :@definition, :starting?, :starting?
+      def_delegator :@definition, :stopped?, :stopped?
+      def_delegator :@definition, :stopping?, :stopping?
 
-      def run(service_ref, params = {}, &block)
-        @definition.run(service_ref, params, &block)
-      end
-
-      def unload
-        @definition.stop
-      end
     end
   end
 end

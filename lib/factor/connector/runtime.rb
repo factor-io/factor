@@ -4,13 +4,31 @@ module Factor
   module Connector
     class Runtime
       include Observable
-      attr_accessor :logs
+      attr_reader :logs, :state
 
       def initialize(connector)
         @connector = connector.new
         @connector.add_observer(self, :log)
         @logs = []
+        @state = :stopped
       end
+
+      def started?
+        @state == :started
+      end
+
+      def starting?
+        @state == :starting
+      end
+
+      def stopped?
+        @state == :stopped
+      end
+
+      def stopping?
+        @state == :stopping
+      end
+
 
       def callback=(block)
         @callback = block if block
@@ -45,8 +63,14 @@ module Factor
         listeners = @connector.class.instance_variable_get('@listeners')
         listener  = listeners[address + [:start]]
         raise ArgumentError, "Listener #{address} not found" unless listener
-        Thread.new do
-          @connector.instance_exec(options, &listener)
+        @start_listener_thread = Thread.new do
+          @state = :starting
+          begin
+            @connector.instance_exec(options, &listener)
+            @state = :started
+          rescue
+            @state = :stopped
+          end
         end
       end
 
@@ -56,7 +80,12 @@ module Factor
         raise ArgumentError, "Listener #{address} not found" unless listener
 
         Thread.new do 
-          @connector.instance_eval(&listener)
+          @state = :stopping
+          begin
+            @connector.instance_eval(&listener)
+          ensure
+            @state = :stopped
+          end
         end
       end
     end

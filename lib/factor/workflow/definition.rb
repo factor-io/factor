@@ -12,25 +12,62 @@ require 'factor/connector/definition'
 module Factor
   module Workflow
     class Definition
-      attr_accessor :credentials
+      attr_reader :state
 
       def initialize(credentials, options={})
-        @workflow_spec     = {}
-        @workflows         = {}
-        @logger            = options[:logger] if options[:logger]
-        @credentials       = credentials
-        @workflow_filename = options[:workflow_filename]
-        @unload            = false
+        @logger             = options[:logger] if options[:logger]
+        @credentials        = credentials
+        @workflow_filename  = options[:workflow_filename]
+        @unload             = false
+        @connector_runtimes = []
       end
 
       def stop
+        @state = :stopping
         @unload = true
+      end
+
+      def state
+        empty        = @connector_runtimes.count == 0
+        all_started  = @connector_runtimes.all? {|r| r.started? }
+        all_stopped  = @connector_runtimes.all? {|r| r.stopped? }
+        any_stopping = @connector_runtimes.any? {|r| r.stopping? }
+        any_starting = @connector_runtimes.any? {|r| r.starting? }
+
+        if empty || all_stopped
+          :stopped
+        elsif all_started
+          :started
+        elsif any_stopping
+          :stopping
+        elsif any_starting
+          :starting
+        else
+          :stopped
+        end
+      end
+
+      def started?
+        state == :started
+      end
+
+      def starting?
+        state == :starting
+      end
+
+      def stopped?
+        state == :stopped
+      end
+
+      def stopping?
+        state == :stopping
       end
 
       def listen(service_ref, params = {}, &block)
         address, connector_runtime, exec, params_and_creds = initialize_connector_runtime(service_ref,params)
         line = caller.first.split(":")[1]
         id   = @workflow_filename ? "#{service_ref}(#{@workflow_filename}:#{line})" : "#{service_ref}"
+        @connector_runtimes << connector_runtime
 
         done = false
 
@@ -53,15 +90,16 @@ module Factor
         end
 
         success "[#{id}] Starting"
-        listener_instance = connector_runtime.start_listener(address.path, params)
+        connector_runtime.start_listener(address.path, params)
         success "[#{id}] Started"
 
         Thread.new do
           Factor::Common::Blocker.block_until { done || @unload }
 
           success "[#{id}] Stopping"
-          listener_instance = connector_runtime.stop_listener
+          connector_runtime.stop_listener
           success "[#{id}] Stopped"
+          @connector_runtimes.delete(connector_runtimes)
         end
 
         exec

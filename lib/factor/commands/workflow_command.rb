@@ -23,7 +23,7 @@ module Factor
         load_all_workflows(workflow_filename)
         block_until_interupt
         @runtimes.each {|r| r.unload}
-        sleep 5
+        Factor::Common::Blocker.block_until { @runtimes.all?{|r| r.stopped?} }
         logger.info 'Good bye!'
       end
 
