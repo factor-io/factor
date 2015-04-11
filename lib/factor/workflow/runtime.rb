@@ -27,11 +27,10 @@ module Factor
 
       def listen(service_ref, params = {}, &block)
         address, connector_runtime, exec, params_and_creds = initialize_connector_runtime(service_ref,params)
-        line    = caller.first.split(":")[1]
-        file_id = @workflow_filename ? "#{@workflow_filename}:#{line}" : "line:#{line}"
-        id      = "#{service_ref}(#{file_id})"
+        line = caller.first.split(":")[1]
+        id   = @workflow_filename ? "#{service_ref}(#{@workflow_filename}:#{line})" : "#{service_ref}"
 
-        connector_runtime.callback = proc do |response|
+        connector_runtime.callback do |response|
           message = response[:message]
           type    = response[:type]
           
@@ -40,7 +39,7 @@ module Factor
             success "[#{id}] Triggered"
             block.call(Factor::Common.simple_object_convert(response[:payload])) if block
           when 'log'
-            log_callback("  [#{id}] #{message}",response[:status])
+            log_callback("[#{id}]   #{message}",response[:status])
           when 'fail'
             message = response[:message] || 'unkonwn error'
             error "[#{id}] Failed: #{message}"
@@ -56,17 +55,16 @@ module Factor
 
       def run(service_ref, params = {}, &block)
         address, connector_runtime, exec, params_and_creds = initialize_connector_runtime(service_ref,params)
-        line    = caller.first.split(":")[1]
-        file_id = @workflow_filename ? "#{@workflow_filename}:#{line}" : "line:#{line}"
-        id      = "#{service_ref}(#{file_id})"
+        line = caller.first.split(":")[1]
+        id   = @workflow_filename ? "#{service_ref}(#{@workflow_filename}:#{line})" : "#{service_ref}"
 
-        connector_runtime.callback = Proc.new do |response|
+        connector_runtime.callback do |response|
           message = response[:message]
           type    = response[:type]
 
           case type
           when 'log'
-            log_callback("  [#{id}] #{message}",response[:status])
+            log_callback("[#{id}]   #{message}",response[:status])
           when 'fail'
             error_message = response[:message] || "unknown error"
             error "[#{id}] Failed: #{error_message}"

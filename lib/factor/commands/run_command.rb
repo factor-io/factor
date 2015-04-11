@@ -24,23 +24,29 @@ module Factor
           params = JSON.parse(args[1] || '{}')
         rescue => ex
           logger.error "'#{args[1]}' can't be parsed as JSON"
+          exit
         end
 
-        if params
-          EM.run do
-            runtime.run(args[0],params) do |response_info|
-              data = response_info.is_a?(Array) ? response_info.map {|i| i.marshal_dump} : response_info.marshal_dump
-              JSON.pretty_generate(data).split("\n").each do |line|
-                logger.info line
-              end
-              EM.stop
-            end.on_fail do
-              EM.stop
+        done = false
+        
+        begin
+          runtime.run(args[0],params) do |response_info|
+            data = response_info.is_a?(Array) ? response_info.map {|i| i.marshal_dump} : response_info.marshal_dump
+            JSON.pretty_generate(data).split("\n").each do |line|
+              logger.info line
             end
+            done = true
+          end.on_fail do
+            done = true
           end
-
-          logger.info 'Good bye!'
+        rescue => ex
+          logger.error ex.message
+          done = true
         end
+
+        Factor::Common::Blocker.block_until { done }
+
+        logger.info 'Good bye!'
       end
     end
   end
