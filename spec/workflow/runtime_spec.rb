@@ -73,12 +73,12 @@ describe Factor::Workflow::Runtime do
         info 'sweet'
       end
     "
-    @runtime.load(workflow_definition, false)
+    @runtime.load(workflow_definition)
      
     expect(@logger).to log success:'Starting'
     expect(@logger).to log info:'i am starting'
     expect(@logger).to log success: 'Triggered'
     expect(@logger).to log info: 'sweet'
-    expect(@logger).to log success:'Stopped'
+    expect(@logger).to log success:'Started'
   end
 end

@@ -21,10 +21,8 @@ module Factor
         @workflow_filename = options[:workflow_filename]
       end
 
-      def load(workflow_definition, take_nap=true)
+      def load(workflow_definition)
         instance_eval(workflow_definition)
-
-        nap if take_nap
       end
 
       def listen(service_ref, params = {}, &block)
@@ -39,25 +37,20 @@ module Factor
           
           case type
           when 'trigger'
-            payload = response[:payload]
-
             success "[#{id}] Triggered"
-            block.call(Factor::Common.simple_object_convert(payload)) if block
-
+            block.call(Factor::Common.simple_object_convert(response[:payload])) if block
           when 'log'
             log_callback("  [#{id}] #{message}",response[:status])
           when 'fail'
             message = response[:message] || 'unkonwn error'
             error "[#{id}] Failed: #{message}"
-            
             exec.fail_block.call(message) if exec.fail_block
           end
         end
 
         success "[#{id}] Starting"
         listener_instance = connector_runtime.start_listener(address.path, params)
-
-        success "[#{id}] Stopped"
+        success "[#{id}] Started"
         exec
       end
 
