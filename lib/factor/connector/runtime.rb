@@ -29,7 +29,6 @@ module Factor
         @state == :stopping
       end
 
-
       def callback=(block)
         @callback = block if block
       end
@@ -54,7 +53,11 @@ module Factor
         action  = actions[address]
         raise ArgumentError, "Action #{address} not found" unless action
         Thread.new do
-          @connector.instance_exec(options,&action)
+          begin
+            @connector.instance_exec(options,&action)
+          rescue => ex
+            log type:'fail', message: ex.message
+          end
         end
       end
 
@@ -68,8 +71,9 @@ module Factor
           begin
             @connector.instance_exec(options, &listener)
             @state = :started
-          rescue
+          rescue => ex
             @state = :stopped
+            log type:'fail', message: ex.message
           end
         end
       end
