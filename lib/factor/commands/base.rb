@@ -50,7 +50,8 @@ module Factor
         end
         configatron[config_type].configure_from_hash(data)
       rescue => ex
-        logger.error "Couldn't load #{config_type} from #{absolute_path}", exception:ex
+        logger.error message:"Couldn't load #{config_type} from #{absolute_path}", exception:ex
+        exit
       end
     end
   end
