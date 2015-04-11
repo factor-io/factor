@@ -14,10 +14,10 @@ module Factor
       attr_accessor :name, :description, :credentials
 
       def initialize(credentials, options={})
-        @workflow_spec = {}
-        @workflows     = {}
-        @logger        = options[:logger] if options[:logger]
-        @credentials   = credentials
+        @workflow_spec     = {}
+        @workflows         = {}
+        @logger            = options[:logger] if options[:logger]
+        @credentials       = credentials
         @workflow_filename = options[:workflow_filename]
       end
 
@@ -27,9 +27,9 @@ module Factor
 
       def listen(service_ref, params = {}, &block)
         address, connector_runtime, exec, params_and_creds = initialize_connector_runtime(service_ref,params)
-        line = caller.first.split(":")[1]
+        line    = caller.first.split(":")[1]
         file_id = @workflow_filename ? "#{@workflow_filename}:#{line}" : "line:#{line}"
-        id = "#{service_ref}(#{file_id})"
+        id      = "#{service_ref}(#{file_id})"
 
         connector_runtime.callback = proc do |response|
           message = response[:message]
@@ -56,9 +56,9 @@ module Factor
 
       def run(service_ref, params = {}, &block)
         address, connector_runtime, exec, params_and_creds = initialize_connector_runtime(service_ref,params)
-        line = caller.first.split(":")[1]
+        line    = caller.first.split(":")[1]
         file_id = @workflow_filename ? "#{@workflow_filename}:#{line}" : "line:#{line}"
-        id = "#{service_ref}(#{file_id})"
+        id      = "#{service_ref}(#{file_id})"
 
         connector_runtime.callback = Proc.new do |response|
           message = response[:message]
