@@ -23,7 +23,9 @@ module Factor
         load_all_workflows(workflow_filename)
         
         logger.info 'Ctrl-c to exit'
-        Factor::Common::Blocker.block_until_interrupt
+        Factor::Common::Blocker.block_until_interrupt_or do
+          @runtimes.all?{|r| r.stopped?}
+        end
 
         logger.info "Sending stop signal"
         @runtimes.each {|r| r.unload}
