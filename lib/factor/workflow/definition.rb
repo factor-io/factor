@@ -91,7 +91,6 @@ module Factor
 
         success "[#{id}] Starting"
         connector_runtime.start_listener(address.path, params)
-        success "[#{id}] Started"
 
         Thread.new do
           Factor::Common::Blocker.block_until { done || @unload }
