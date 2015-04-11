@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+require 'factor/common/blocker'
 require 'factor/commands/base'
 require 'factor/workflow/runtime'
 
@@ -81,17 +82,11 @@ module Factor
 
       def block_until_interupt
         logger.info 'Ctrl-c to exit'
-        begin
-          loop do
-            sleep 1
-          end
-        rescue Interrupt
-          logger.info 'Exiting app...'
-        end
+        Factor::Common.block_until_interupt
+        logger.info 'Exiting app...'
       end
 
       def load_workflow(workflow_filename)
-        # workflow_filename = File.expand_path(filename)
         logger.info "Loading workflow from #{workflow_filename}"
         begin
           workflow_definition = File.read(workflow_filename)
@@ -113,18 +108,13 @@ module Factor
           logger.error message:message, exception:ex
         end
 
-        workflow_thread = fork do
-          begin
-            logger.info "Starting workflow"
-            runtime.load(workflow_definition)
-          rescue => ex
-            logger.error message: "Couldn't start workflow", exception: ex
-          end
+        begin
+          logger.info "Starting workflow"
+          runtime.load(workflow_definition)
+        rescue => ex
+          logger.error message: "Couldn't start workflow", exception: ex
         end
-
-        workflow_thread
       end
-
     end
   end
 end
