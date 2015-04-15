@@ -1,10 +1,9 @@
 # encoding: UTF-8
 
-require 'colored'
 require 'configatron'
 require 'yaml'
 require 'fileutils'
-require 'logger/basic'
+require 'factor/logger/basic'
 
 module Factor
   module Commands
@@ -13,7 +12,6 @@ module Factor
       attr_accessor :logger
 
       DEFAULT_FILENAME = {
-        connectors:   File.expand_path('./connectors.yml'),
         credentials:  File.expand_path('./credentials.yml')
       }
 
@@ -23,19 +21,13 @@ module Factor
 
       def load_config(options = {})
         load_config_data :credentials, options
-        load_config_data :connectors, options
       end
 
       def save_config(options={})
         credentials_relative_path = options[:credentials] || DEFAULT_FILENAME[:credentials]
         credentials_absolute_path = File.expand_path(credentials_relative_path)
-        connectors_relative_path = options[:connectors] || DEFAULT_FILENAME[:connectors]
-        connectors_absolute_path = File.expand_path(connectors_relative_path)
-
-        connectors  = Hash[stringify(configatron.connectors.to_h).sort]
         credentials = Hash[stringify(configatron.credentials.to_h).sort]
 
-        File.write(connectors_absolute_path,YAML.dump(connectors))
         File.write(credentials_absolute_path,YAML.dump(credentials))
       end
 
@@ -58,7 +50,8 @@ module Factor
         end
         configatron[config_type].configure_from_hash(data)
       rescue => ex
-        logger.error "Couldn't load #{config_type} from #{absolute_path}", exception:ex
+        logger.error message:"Couldn't load #{config_type} from #{absolute_path}", exception:ex
+        exit
       end
     end
   end

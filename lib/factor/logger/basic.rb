@@ -1,4 +1,5 @@
-require_relative './logger.rb'
+require 'rainbow'
+require 'factor/logger/logger'
 
 module Factor
   module Log
@@ -43,10 +44,10 @@ module Factor
       def format_section(section)
         formated_section = section.to_s.upcase.center(10)
         case section.to_sym
-        when :error then formated_section.red
-        when :info then formated_section.bold
-        when :warn then formated_section.yellow
-        when :success then formated_section.green
+        when :error then Rainbow(formated_section).red
+        when :info then Rainbow(formated_section).white.bright
+        when :warn then Rainbow(formated_section).yellow
+        when :success then Rainbow(formated_section).green
         else formated_section
         end
       end

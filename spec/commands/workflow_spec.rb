@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-require 'commands/workflow_command'
+require 'factor/commands/workflow_command'
 
 describe Factor::Commands::WorkflowCommand do
   describe '.server' do
