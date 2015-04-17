@@ -1,8 +1,13 @@
 language: ruby
 rvm:
+- 2.0.0
+- 2.1.3
+- 2.1.5
+- 2.2.0
 - 2.2.1
+- 2.2.2
 env:
-  matrix:
+  global:
     secure: Tq2/ECBrOTUmGLk/IaoeukgjCZ3ZfBVvAh8rvX6c2GJ0MopTXbWGRAaOxK+CXPqEW1X3NCtvJx26ti+QiXfEufACHllfYFpGeD9+AEreDyyFjA10X4/vgh5k4EiFP7p+3VAj8N1i2/+H5554IRxJgmhWNR7iATOavRf7g05nfec=
 deploy:
   provider: rubygems

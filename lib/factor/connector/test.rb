@@ -6,11 +6,44 @@ require 'wrong'
 module Factor
   module Connector
     module Test
+      DEFAULT_DELAY = 5
+      DEFAULT_TIMEOUT = 0.25
+
+      @timeout = DEFAULT_TIMEOUT
+      @delay   = DEFAULT_DELAY
+
+      def self.timeout
+        @timeout
+      end
+
+      def self.timeout=(value)
+        @timeout=value
+      end
+
+      def self.reset
+        @timeout = DEFAULT_TIMEOUT
+        @delay   = DEFAULT_DELAY
+      end
+
+      def self.delay
+        @delay
+      end
+
+      def self.delay=(value)
+        @delay = value
+      end
+
+      def self.eventually_options
+        options = {}
+        options[:timeout] = Factor::Connector::Test.timeout if Factor::Connector::Test.timeout!=DEFAULT_TIMEOUT
+        options[:delay] = Factor::Connector::Test.delay if Factor::Connector::Test.delay!=DEFAULT_DELAY
+        options
+      end
 
       RSpec::Matchers.define :message do |expected|
         match do |actual|
           begin
-            Wrong.eventually do
+            Wrong.eventually(Factor::Connector::Test.eventually_options) do
               actual.logs.any? do |log|
                 case expected.class.name
                 when 'Hash'
@@ -53,9 +86,10 @@ module Factor
       end
 
       RSpec::Matchers.define :respond do |expected|
+
         match do |actual|
           begin
-            Wrong.eventually do
+            Wrong.eventually(Factor::Connector::Test.eventually_options) do
               actual.logs.any? do |log|
                 case expected.class.name
                 when 'Hash'
@@ -86,9 +120,10 @@ module Factor
       end
 
       RSpec::Matchers.define :trigger do |expected|
+
         match do |actual|
           begin
-            Wrong.eventually do
+            Wrong.eventually(Factor::Connector::Test.eventually_options) do
               actual.logs.any? do |log|
                 case expected.class.name
                 when 'Hash'
@@ -119,9 +154,10 @@ module Factor
       end
 
       RSpec::Matchers.define :fail do |expected|
+
         match do |actual|
           begin
-            Wrong.eventually do
+            Wrong.eventually(Factor::Connector::Test.eventually_options) do
               actual.logs.any? do |log|
                 case expected.class.name
                 when 'String'
