@@ -6,11 +6,41 @@ require 'wrong'
 module Factor
   module Connector
     module Test
+      DEFAULT_DELAY = 5
+      DEFAULT_TIMEOUT = 0.25
+
+      @timeout = DEFAULT_TIMEOUT
+      @delay   = DEFAULT_DELAY
+
+      def self.timeout
+        @timeout
+      end
+
+      def self.timeout=(value)
+        @timeout=value
+      end
+
+      def self.reset
+        @timeout = DEFAULT_TIMEOUT
+        @delay   = DEFAULT_DELAY
+      end
+
+      def self.delay
+        @delay
+      end
+
+      def self.delay=(value)
+        @delay = value
+      end
 
       RSpec::Matchers.define :message do |expected|
+        options = {
+          timeout: Factor::Connector::Test.timeout,
+          delay:   Factor::Connector::Test.delay  
+        }
         match do |actual|
           begin
-            Wrong.eventually do
+            Wrong.eventually options do
               actual.logs.any? do |log|
                 case expected.class.name
                 when 'Hash'
@@ -53,9 +83,13 @@ module Factor
       end
 
       RSpec::Matchers.define :respond do |expected|
+        options = {
+          timeout: Factor::Connector::Test.timeout,
+          delay:   Factor::Connector::Test.delay  
+        }
         match do |actual|
           begin
-            Wrong.eventually do
+            Wrong.eventually options do
               actual.logs.any? do |log|
                 case expected.class.name
                 when 'Hash'
@@ -86,9 +120,13 @@ module Factor
       end
 
       RSpec::Matchers.define :trigger do |expected|
+        options = {
+          timeout: Factor::Connector::Test.timeout,
+          delay:   Factor::Connector::Test.delay  
+        }
         match do |actual|
           begin
-            Wrong.eventually do
+            Wrong.eventually options do
               actual.logs.any? do |log|
                 case expected.class.name
                 when 'Hash'
@@ -119,9 +157,13 @@ module Factor
       end
 
       RSpec::Matchers.define :fail do |expected|
+        options = {
+          timeout: Factor::Connector::Test.timeout,
+          delay:   Factor::Connector::Test.delay  
+        }
         match do |actual|
           begin
-            Wrong.eventually do
+            Wrong.eventually options do
               actual.logs.any? do |log|
                 case expected.class.name
                 when 'String'
