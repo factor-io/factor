@@ -33,14 +33,17 @@ module Factor
         @delay = value
       end
 
+      def self.eventually_options
+        options = {}
+        options[:timeout] = Factor::Connector::Test.timeout if Factor::Connector::Test.timeout!=DEFAULT_TIMEOUT
+        options[:delay] = Factor::Connector::Test.delay if Factor::Connector::Test.delay!=DEFAULT_DELAY
+        options
+      end
+
       RSpec::Matchers.define :message do |expected|
-        options = {
-          timeout: Factor::Connector::Test.timeout,
-          delay:   Factor::Connector::Test.delay  
-        }
         match do |actual|
           begin
-            Wrong.eventually options do
+            Wrong.eventually(Factor::Connector::Test.eventually_options) do
               actual.logs.any? do |log|
                 case expected.class.name
                 when 'Hash'
@@ -83,13 +86,10 @@ module Factor
       end
 
       RSpec::Matchers.define :respond do |expected|
-        options = {
-          timeout: Factor::Connector::Test.timeout,
-          delay:   Factor::Connector::Test.delay  
-        }
+
         match do |actual|
           begin
-            Wrong.eventually options do
+            Wrong.eventually(Factor::Connector::Test.eventually_options) do
               actual.logs.any? do |log|
                 case expected.class.name
                 when 'Hash'
@@ -120,13 +120,10 @@ module Factor
       end
 
       RSpec::Matchers.define :trigger do |expected|
-        options = {
-          timeout: Factor::Connector::Test.timeout,
-          delay:   Factor::Connector::Test.delay  
-        }
+
         match do |actual|
           begin
-            Wrong.eventually options do
+            Wrong.eventually(Factor::Connector::Test.eventually_options) do
               actual.logs.any? do |log|
                 case expected.class.name
                 when 'Hash'
@@ -157,13 +154,10 @@ module Factor
       end
 
       RSpec::Matchers.define :fail do |expected|
-        options = {
-          timeout: Factor::Connector::Test.timeout,
-          delay:   Factor::Connector::Test.delay  
-        }
+
         match do |actual|
           begin
-            Wrong.eventually options do
+            Wrong.eventually(Factor::Connector::Test.eventually_options) do
               actual.logs.any? do |log|
                 case expected.class.name
                 when 'String'
