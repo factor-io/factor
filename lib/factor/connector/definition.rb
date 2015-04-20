@@ -1,4 +1,5 @@
 require 'observer'
+require 'varify'
 
 require 'factor/connector/error'
 
