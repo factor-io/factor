@@ -1,12 +1,13 @@
 PATH
   remote: .
   specs:
-    factor (2.9.03)
+    factor (2.9.04)
       commander (~> 4.3, >= 4.3.0)
       configatron (~> 4.5, >= 4.5.0)
       rainbow (~> 2.0, >= 2.0.0)
       rest-client (~> 1.8, >= 1.8.0)
       rspec (~> 3.2, >= 3.2.0)
+      varify (~> 0.0.2)
       wrong (~> 0.7.1)
 
 GEM
@@ -40,7 +41,7 @@ GEM
       guard (~> 2.1)
       guard-compat (~> 1.1)
       rspec (>= 2.99.0, < 4.0)
-    highline (1.7.1)
+    highline (1.7.2)
     hitimes (1.2.2)
     http-cookie (1.0.2)
       domain_name (~> 0.5)
@@ -103,6 +104,7 @@ GEM
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.1)
+    varify (0.0.2)
     wrong (0.7.1)
       diff-lcs (~> 1.2.5)
       predicated (~> 0.2.6)

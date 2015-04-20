@@ -6,6 +6,7 @@ module Factor
   module Connector
     class Definition
       include Observable
+      include Varify
 
       def self.id(id)
         raise ArgumentError, "ID must be a sym" unless id.is_a?(Symbol)
