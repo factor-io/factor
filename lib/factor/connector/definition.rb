@@ -9,6 +9,12 @@ module Factor
       include Observable
       include Varify
 
+      def initialize
+        Varify::Base.callback do |failure|
+          fail failure[:message]
+        end
+      end
+
       def self.id(id)
         raise ArgumentError, "ID must be a sym" unless id.is_a?(Symbol)
         instance_variable_set('@id',id)

@@ -25,6 +25,9 @@ describe Factor::Connector::Runtime do
         fail "Something broke"
         respond foo:'test'
       end
+      action :action_varify do |data|
+        foo = data.varify(:foo,required:true)
+      end
       listener :listener do
         t=nil
         start do |data|
@@ -59,6 +62,11 @@ describe Factor::Connector::Runtime do
     it 'can fail' do
       @runtime.run([:action_fail], foo:'bar')
       expect(@runtime).to fail 'Something broke'
+    end
+
+    it 'can fail' do
+      @runtime.run([:action_varify], nofoo:'bar')
+      expect(@runtime).to fail 'Foo (:foo) is required'
     end
   end
 
