@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'rest-client', '~> 1.8', '>= 1.8.0'
   s.add_runtime_dependency 'wrong', '~> 0.7.1'
   s.add_runtime_dependency 'rspec', '~> 3.2', '>= 3.2.0'
-  s.add_runtime_dependency 'varify', '~> 0.0.2'
+  s.add_runtime_dependency 'varify', '~> 0.0.3'
   s.add_development_dependency 'codeclimate-test-reporter', '~> 0.4.7'
   s.add_development_dependency 'rake', '~> 10.4.2'
   s.add_development_dependency 'guard', '~> 2.12.5'
