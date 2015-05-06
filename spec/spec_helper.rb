@@ -1,13 +1,9 @@
 # encoding: UTF-8
 
-require 'codeclimate-test-reporter'
+require 'coveralls'
 require 'stringio'
 
-if ENV['CODECLIMATE_REPO_TOKEN']
-  CodeClimate::TestReporter.start do
-    add_filter '/spec/'
-  end
-end
+Coveralls.wear!
 
 $LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
 
