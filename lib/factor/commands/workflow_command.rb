@@ -22,15 +22,18 @@ module Factor
         load_config(config_settings)
         load_all_workflows(workflow_filename)
         
-        logger.info 'Ctrl-c to exit'
-        Factor::Common::Blocker.block_until_interrupt_or do
-          @runtimes.all?{|r| r.stopped?}
-        end
+        if @runtimes.count > 0
 
-        logger.info "Sending stop signal"
-        @runtimes.each {|r| r.unload if r.started? }
-        Factor::Common::Blocker.block_until sleep:0.5 do 
-          @runtimes.all?{|r| r.stopped?}
+          logger.info 'Ctrl-c to exit'
+          Factor::Common::Blocker.block_until_interrupt_or do
+            @runtimes.all?{|r| r.stopped?}
+          end
+
+          logger.info "Sending stop signal"
+          @runtimes.each {|r| r.unload if r.started? }
+          Factor::Common::Blocker.block_until sleep:0.5 do 
+            @runtimes.all?{|r| r.stopped?}
+          end
         end
         logger.info 'Good bye!'
       end
