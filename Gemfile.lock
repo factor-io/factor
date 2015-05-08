@@ -7,7 +7,7 @@ PATH
       rainbow (~> 2.0, >= 2.0.0)
       rest-client (~> 1.8, >= 1.8.0)
       rspec (~> 3.2, >= 3.2.0)
-      varify (~> 0.0.3)
+      varify (~> 0.0.5)
       wrong (~> 0.7.1)
 
 GEM
@@ -111,7 +111,7 @@ GEM
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.1)
-    varify (0.0.4)
+    varify (0.0.5)
     wrong (0.7.1)
       diff-lcs (~> 1.2.5)
       predicated (~> 0.2.6)
