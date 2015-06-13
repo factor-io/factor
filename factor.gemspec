@@ -23,10 +23,10 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'configatron', '~> 4.5', '>= 4.5.0'
   s.add_runtime_dependency 'rest-client', '~> 1.8', '>= 1.8.0'
   s.add_runtime_dependency 'wrong', '~> 0.7.1'
-  s.add_runtime_dependency 'rspec', '~> 3.2', '>= 3.2.0'
+  s.add_runtime_dependency 'rspec', '~> 3.3', '>= 3.3.0'
   s.add_runtime_dependency 'varify', '~> 0.0.5'
   s.add_development_dependency 'coveralls', '~> 0.8.1'
   s.add_development_dependency 'rake', '~> 10.4.2'
-  s.add_development_dependency 'guard', '~> 2.12.5'
-  s.add_development_dependency 'guard-rspec', '~> 4.5.0'
+  s.add_development_dependency 'guard', '~> 2.12.6'
+  s.add_development_dependency 'guard-rspec', '~> 4.5.2'
 end
