@@ -18,15 +18,15 @@ Gem::Specification.new do |s|
   s.executables   = ['factor']
   s.require_paths = ['lib']
 
-  s.add_runtime_dependency 'commander', '~> 4.3', '>= 4.3.4'
-  s.add_runtime_dependency 'rainbow', '~> 2.0', '>= 2.0.0'
-  s.add_runtime_dependency 'configatron', '~> 4.5', '>= 4.5.0'
-  s.add_runtime_dependency 'rest-client', '~> 1.8', '>= 1.8.0'
+  s.add_runtime_dependency 'commander', '~> 4.4.0'
+  s.add_runtime_dependency 'rainbow', '~> 2.1.0'
+  s.add_runtime_dependency 'configatron', '~> 4.5.0'
+  s.add_runtime_dependency 'rest-client', '~> 1.8.0'
   s.add_runtime_dependency 'wrong', '~> 0.7.1'
-  s.add_runtime_dependency 'rspec', '~> 3.3', '>= 3.3.0'
+  s.add_runtime_dependency 'rspec', '~> 3.4.0'
   s.add_runtime_dependency 'varify', '~> 0.0.5'
-  s.add_development_dependency 'coveralls', '~> 0.8.1'
-  s.add_development_dependency 'rake', '~> 10.4.2'
-  s.add_development_dependency 'guard', '~> 2.12.6'
-  s.add_development_dependency 'guard-rspec', '~> 4.5.2'
+  s.add_development_dependency 'coveralls', '~> 0.8.13'
+  s.add_development_dependency 'rake', '~> 11.1.2'
+  s.add_development_dependency 'guard', '~> 2.13.0'
+  s.add_development_dependency 'guard-rspec', '~> 4.6.5'
 end
