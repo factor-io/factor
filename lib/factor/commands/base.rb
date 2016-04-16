@@ -3,7 +3,7 @@
 require 'configatron'
 require 'yaml'
 require 'fileutils'
-require 'factor/logger/basic'
+require 'factor/logger'
 
 module Factor
   module Commands
@@ -11,47 +11,42 @@ module Factor
     class Command
       attr_accessor :logger
 
-      DEFAULT_FILENAME = {
-        credentials:  File.expand_path('./credentials.yml')
-      }
+      DEFAULT_FILENAME = File.expand_path('./settings.yml')
 
-      def initialize
-        @logger = Factor::Log::BasicLogger.new
+
+      def load_settings(options = {})
+        relative_path = options.settings || DEFAULT_FILENAME
+        absolute_path = File.expand_path(relative_path)
+        content       = File.read(absolute_path)
+        data          = YAML.load(content)
+        configatron[:settings].configure_from_hash(data)
       end
 
-      def load_config(options = {})
-        load_config_data :credentials, options
+      def settings
+        configatron.settings.to_hash
       end
 
-      def save_config(options={})
-        credentials_relative_path = options[:credentials] || DEFAULT_FILENAME[:credentials]
-        credentials_absolute_path = File.expand_path(credentials_relative_path)
-        credentials = Hash[stringify(configatron.credentials.to_h).sort]
-
-        File.write(credentials_absolute_path,YAML.dump(credentials))
-      end
 
       private
 
-      def stringify(hash)
-        hash.inject({}) do |options, (key, value)|
-          options[key.to_s] = value.is_a?(Hash) ? stringify(value) : value
-          options
+      def try_json(value)
+        new_value = value
+        begin
+          new_value = JSON.parse(value, symbolize_names: true)
+        rescue JSON::ParserError
         end
+        new_value
       end
 
-      def load_config_data(config_type, options = {})
-        relative_path = options[config_type] || DEFAULT_FILENAME[config_type]
-        absolute_path = File.expand_path(relative_path)
-        begin
-          data = YAML.load(File.read(absolute_path))
-        rescue
-          data = {}
+
+      def parse_data(args = [])
+        request_options = {}
+        args.each do |arg|
+          key,value = arg.split(/:/,2)
+          raise ArgumentError, "Option '#{arg}' is not a valid option" unless key && value
+          request_options[key.to_sym] = try_json(value)
         end
-        configatron[config_type].configure_from_hash(data)
-      rescue => ex
-        logger.error message:"Couldn't load #{config_type} from #{absolute_path}", exception:ex
-        exit
+        request_options
       end
     end
   end

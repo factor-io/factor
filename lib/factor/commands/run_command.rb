@@ -2,46 +2,27 @@
 require 'json'
 
 require 'factor/commands/base'
-require 'factor/workflow/runtime'
+require 'factor/connector'
+# require 'factor/workflow/runtime'
 
 module Factor
   module Commands
     class RunCommand < Factor::Commands::Command
       def run(args, options)
-        config_settings = {}
-        config_settings[:credentials] = options.credentials
-        load_config(config_settings)
 
-        credential_settings = configatron.credentials.to_hash
-        runtime = Factor::Workflow::Runtime.new(credential_settings, logger: logger)
+        address = args[0]
+        request_options = parse_data(args[1..-1])
 
-        begin
-          params = JSON.parse(args[1] || '{}')
-        rescue => ex
-          logger.error "'#{args[1]}' can't be parsed as JSON"
-          exit
-        end
+        require options.require if options.require
 
-        done = false
-        
-        begin
-          runtime.run(args[0],params) do |response_info|
-            data = response_info.is_a?(Array) ? response_info.map {|i| i.marshal_dump} : response_info.marshal_dump
-            JSON.pretty_generate(data).split("\n").each do |line|
-              logger.info line
-            end
-            done = true
-          end.on_fail do
-            done = true
-          end
-        rescue => ex
-          logger.error ex.message
-          done = true
-        end
+        connector_class = Factor::Connector.get(address)
 
-        Factor::Common::Blocker.block_until_interrupt_or { done }
+        raise ArgumentError, "Connector '#{address}' not found" unless connector_class
 
-        logger.info 'Good bye!'
+        connector = connector_class.new(request_options)
+        response = connector.run
+
+        puts response
       end
     end
   end
