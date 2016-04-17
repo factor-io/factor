@@ -38,15 +38,6 @@ module Factor
         Future.new(@promise.rescue(&block))
       end
 
-      def depth
-        count = 0
-        begin
-          parent=@promise.parent
-          count +=1 if parent
-        end while parent
-        count
-      end
-
       def wait
         @promise.execute if @promise.unscheduled?
         @promise.wait
@@ -60,14 +51,28 @@ module Factor
             handler.wait
             handler
           end
-          completed.all? do |future|
-            future.fulfilled? && block.call(future.value)
-          end
+          worked = completed.all? { |handler| handler.fulfilled? && block.call(handler.value) }
+
+          raise StandardError, "At least one event failed" unless worked
+
+          worked
         end
       end
 
-      def self.any(number=1, *handlers, &block)
-        
+      def self.any(*handlers, &block)
+        block ||= lambda {|v| true}
+        Future.new do
+          handlers.each {|handler| handler.execute if handler.unscheduled?}
+          completed = handlers.map do |handler|
+            handler.wait
+            handler
+          end
+          worked = completed.any? { |handler| handler.fulfilled? && block.call(handler.value) }
+
+          raise StandardError, "There were no successful events" unless worked
+
+          worked
+        end
       end
     end
   end

@@ -19,8 +19,8 @@ module Factor
         Future.all(*events, &block)
       end
 
-      def any(number=1, *events, &block)
-        Future.any(number, events, &block)
+      def any(*events, &block)
+        Future.any(*events, &block)
       end
 
       def on(type, *actions, &block)
