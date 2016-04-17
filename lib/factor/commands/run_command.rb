@@ -11,7 +11,7 @@ module Factor
       def run(args, options)
 
         address = args[0]
-        request_options = parse_data(args[1..-1])
+        request_options = params(args[1..-1])
 
         require options.require if options.require
 

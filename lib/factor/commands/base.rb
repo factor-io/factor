@@ -39,7 +39,7 @@ module Factor
       end
 
 
-      def parse_data(args = [])
+      def params(args = [])
         request_options = {}
         args.each do |arg|
           key,value = arg.split(/:/,2)
