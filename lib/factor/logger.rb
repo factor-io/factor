@@ -30,11 +30,6 @@ module Factor
 
     private
 
-    def format_log_level(log_level)
-      formated_log_level = log_level.to_s.upcase.center(10)
-      color(log_level, formated_log_level)
-    end
-
     def color(log_level, text)
       case log_level.to_sym
       when :error then Rainbow(text).red
