@@ -2,6 +2,7 @@
 
 require 'factor/commands/base'
 require 'factor/workflow/runtime'
+require 'factor/logger'
 
 module Factor
   module Commands
@@ -13,7 +14,8 @@ module Factor
         load_settings(options) if options.settings
 
         workflow_definition = File.read(workflow_filename)
-        runtime = Factor::Workflow::Runtime.new(settings)
+        logger = Factor::Logger.new()
+        runtime = Factor::Workflow::Runtime.new(settings: settings, logger:logger)
         runtime.load workflow_definition, workflow_filename
       end
     end

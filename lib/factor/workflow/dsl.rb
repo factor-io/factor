@@ -4,10 +4,10 @@ module Factor
   module Workflow
     class DSL
       def initialize(options={})
-        @options=options
+        @logger = options[:logger]
       end
 
-      def run(address,options={}, &block)
+      def run(address, options={}, &block)
 
         connector_class = Factor::Connector.get(address)
         connector = connector_class.new(options)
@@ -21,6 +21,22 @@ module Factor
 
       def any(*events, &block)
         Future.any(*events, &block)
+      end
+
+      def info(message)
+        @logger.info(message) if @logger
+      end
+
+      def warn(message)
+        @logger.warn(message) if @logger
+      end
+
+      def error(message)
+        @logger.error(message) if @logger
+      end
+
+      def success(message)
+        @logger.success(message) if @logger
       end
 
       def on(type, *actions, &block)
