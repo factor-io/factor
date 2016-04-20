@@ -24,19 +24,23 @@ module Factor
       end
 
       def info(message)
-        @logger.info(message) if @logger
+        log(:info, message)
       end
 
       def warn(message)
-        @logger.warn(message) if @logger
+        log(:warn, message)
       end
 
       def error(message)
-        @logger.error(message) if @logger
+        log(:error, message)
       end
 
       def success(message)
-        @logger.success(message) if @logger
+        log(:success, message)
+      end
+
+      def log(type, message)
+        @logger.log(type, message) if @logger
       end
 
       def on(type, *actions, &block)
