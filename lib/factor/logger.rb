@@ -9,8 +9,7 @@ module Factor
     end
 
     def log(log_level, message)
-      log_level_text  = format_log_level(log_level)
-      puts "[ #{log_level_text} ] [#{time}] #{'  ' * @indent}#{message}"
+      puts "[#{time}] #{'  ' * @indent}#{color(log_level, message)}"
     end
 
     def info(message)
@@ -33,12 +32,16 @@ module Factor
 
     def format_log_level(log_level)
       formated_log_level = log_level.to_s.upcase.center(10)
+      color(log_level, formated_log_level)
+    end
+
+    def color(log_level, text)
       case log_level.to_sym
-      when :error then Rainbow(formated_log_level).red
-      when :info then Rainbow(formated_log_level).white.bright
-      when :warn then Rainbow(formated_log_level).yellow
-      when :success then Rainbow(formated_log_level).green
-      else formated_log_level
+      when :error then Rainbow(text).red
+      when :info then Rainbow(text).white.bright
+      when :warn then Rainbow(text).yellow
+      when :success then Rainbow(text).green
+      else text
       end
     end
 
