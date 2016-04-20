@@ -17,7 +17,6 @@ module Factor
       @@paths[path]
     end
 
-    
     def run
     end
 
@@ -26,6 +25,29 @@ module Factor
     def trigger(data)
       changed
       notify_observers(:trigger, data)
+    end
+
+    def info(message)
+      log(:info, message)
+    end
+
+    def warn(message)
+      log(:warn, message)
+    end
+
+    def success(message)
+      log(:success, message)
+    end
+
+    def error(message)
+      log(:error, message)
+    end
+
+    def log(type, message)
+      changed
+      notify_observers(:log, {type: type, message:message})
+      changed
+      notify_observers(type, message)
     end
 
     private
