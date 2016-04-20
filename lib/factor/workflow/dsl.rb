@@ -7,7 +7,7 @@ module Factor
         @logger = options[:logger]
       end
 
-      def run(address, options={}, &block)
+      def run(address, options={})
 
         connector_class = Factor::Connector.get(address)
         connector = connector_class.new(options)
