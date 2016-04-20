@@ -21,6 +21,8 @@ module Factor
     def run
     end
 
+    protected
+
     def trigger(data)
       changed
       notify_observers(:trigger, data)
