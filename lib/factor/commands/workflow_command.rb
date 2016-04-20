@@ -9,14 +9,23 @@ module Factor
     # Workflow is a Command to start the factor runtime from the CLI
     class WorkflowCommand < Factor::Commands::Command
       def run(args, options)
-        workflow_filename = File.expand_path(args[0])
         
-        load_settings(options) if options.settings
+        if options.settings
+          info "Loading settings from #{options.settings}" if options.verbose
+          load_settings(options) 
+        end
 
+        workflow_filename = File.expand_path(args[0])
+        info "Loading workflow from '#{workflow_filename}'" if options.verbose
         workflow_definition = File.read(workflow_filename)
-        logger = Factor::Logger.new()
-        runtime = Factor::Workflow::Runtime.new(settings: settings, logger:logger)
+
+        info "Starting workflow runtime..." if options.verbose
+        @logger.indent += 1 if options.verbose
+        runtime = Factor::Workflow::Runtime.new(settings: settings, logger:@logger, verbose: options.verbose)
         runtime.load workflow_definition, workflow_filename
+        @logger.indent -= 1 if options.verbose
+
+        success "Workflow completed" if options.verbose
       end
     end
   end

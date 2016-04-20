@@ -13,6 +13,9 @@ module Factor
 
       DEFAULT_FILENAME = File.expand_path('./settings.yml')
 
+      def initialize
+        @logger = Factor::Logger.new
+      end
 
       def load_settings(options = {})
         relative_path = options.settings || DEFAULT_FILENAME
@@ -24,6 +27,28 @@ module Factor
 
       def settings
         configatron.settings.to_hash
+      end
+
+      protected
+
+      def info(message)
+        log(:info, message)
+      end
+
+      def warn(message)
+        log(:warn, message)
+      end
+
+      def error(message)
+        log(:error, message)
+      end
+
+      def success(message)
+        log(:success, message)
+      end
+
+      def log(type, message)
+        @logger.log(type, message) if @logger
       end
 
 
