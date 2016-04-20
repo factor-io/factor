@@ -29,11 +29,11 @@ module Factor
     def format_log_level(log_level)
       formated_log_level = log_level.to_s.upcase.center(10)
       case log_level.to_sym
-      when :error then Rainbow(formated_section).red
-      when :info then Rainbow(formated_section).white.bright
-      when :warn then Rainbow(formated_section).yellow
-      when :success then Rainbow(formated_section).green
-      else formated_section
+      when :error then Rainbow(formated_log_level).red
+      when :info then Rainbow(formated_log_level).white.bright
+      when :warn then Rainbow(formated_log_level).yellow
+      when :success then Rainbow(formated_log_level).green
+      else formated_log_level
       end
     end
 
