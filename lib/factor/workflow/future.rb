@@ -44,22 +44,16 @@ module Factor
       end
 
       def self.all(*handlers, &block)
-        block ||= lambda {|v| true}
-        Future.new do
-          handlers.each {|handler| handler.execute if handler.unscheduled?}
-          completed = handlers.map do |handler|
-            handler.wait
-            handler
-          end
-          worked = completed.all? { |handler| handler.fulfilled? && block.call(handler.value) }
-
-          raise StandardError, "At least one event failed" unless worked
-
-          worked
-        end
+        self.aggregate(:all?, *handlers, &block)
       end
 
       def self.any(*handlers, &block)
+        self.aggregate(:any?, *handlers, &block)
+      end
+
+      private
+
+      def self.aggregate(method, *handlers, &block)
         block ||= lambda {|v| true}
         Future.new do
           handlers.each {|handler| handler.execute if handler.unscheduled?}
@@ -67,7 +61,7 @@ module Factor
             handler.wait
             handler
           end
-          worked = completed.any? { |handler| handler.fulfilled? && block.call(handler.value) }
+          worked = completed.send(method){ |handler| handler.fulfilled? && block.call(handler.value) }
 
           raise StandardError, "There were no successful events" unless worked
 
