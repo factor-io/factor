@@ -4,7 +4,7 @@ module Factor
   class Connector
     include Observable
     def self.register(connector)
-      if connector.superclass != Factor::Connector
+      if connector.ancestors.include?(self.class)
         raise ArgumentError, "Connector must be a Factor::Connector"
       end
 
