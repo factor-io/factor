@@ -12,28 +12,20 @@ module Factor
         address      = args[0]
         service_name = args[0].split('::')[0]
         parameters   = params(args[1..-1])
-
-        if options.connector
-          info "Loading #{options.connector}" if options.verbose
-          require options.connector
-        end
+        connector    = load_connector(options, address, parameters)
 
         load_settings(options)
-
-        connector_class = Factor::Connector.get(address)
-
-        raise ArgumentError, "Connector '#{address}' not found" unless connector_class
-
-        info "Running '#{address}(#{parameters})'" if options.verbose
-        connector = connector_class.new(parameters.merge(settings[service_name] || {}))
-        connector.add_observer(self, :events) if options.verbose
+        
+        if options.verbose
+          info "Running '#{address}(#{parameters})'"
+          connector.add_observer(self, :events) 
+        end
         response = connector.run
 
-        success "Run complete:" if options.verbose
+        success "Response:" if options.verbose
         @logger.indent options.verbose ? 1 : 0 do 
           info response
         end
-        success 'Done!' if options.verbose
       end
 
       def events(type, content)
@@ -42,6 +34,18 @@ module Factor
             @logger.log(content[:type], content[:message])
           }
         end
+      end
+
+      def load_connector(options, address, parameters)
+        service_name = address.split('::')[0]
+        if options.connector
+          info "Loading #{options.connector}" if options.verbose
+          require options.connector
+        end
+        connector_class = Factor::Connector.get(address)
+        raise ArgumentError, "Connector '#{address}' not found" unless connector_class
+        connector = connector_class.new(parameters.merge(settings[service_name] || {}))
+        connector
       end
     end
   end
