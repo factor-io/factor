@@ -2,14 +2,20 @@ require 'rainbow'
 
 module Factor
   class Logger
-    attr_accessor :indent
+    attr_accessor :indentation
     
     def initialize
-      @indent = 0
+      @indentation = 0
+    end
+
+    def indent(indentation=1, &block)
+      @indentation += indentation
+      block.call
+      @indentation -= indentation
     end
 
     def log(log_level, message)
-      puts "[#{time}] #{'  ' * @indent}#{color(log_level, message)}"
+      puts "[#{time}] #{'  ' * @indentation}#{color(log_level, message)}"
     end
 
     def info(message)

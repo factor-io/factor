@@ -23,6 +23,7 @@ command 'run' do |c|
   c.description = 'Run a specific command.'
   c.option '--connector FILE', String, 'file to require for loading method'
   c.option '--verbose', 'Verbose logging'
+  c.option '--settings FILE', String, 'factor.yml file path.'
   c.when_called Factor::Commands::RunCommand, :run
 end
 
