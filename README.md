@@ -1,3 +1,5 @@
+![Factor.io Logo](/factor.png)
+
 [![Code Climate](https://codeclimate.com/github/factor-io/factor.png)](https://codeclimate.com/github/factor-io/factor)
 [![Coverage Status](https://coveralls.io/repos/factor-io/factor/badge.svg)](https://coveralls.io/r/factor-io/factor)
 [![Dependency Status](https://gemnasium.com/factor-io/factor.svg)](https://gemnasium.com/factor-io/factor)
