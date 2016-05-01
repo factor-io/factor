@@ -3,6 +3,7 @@
 [![Dependency Status](https://gemnasium.com/factor-io/factor.svg)](https://gemnasium.com/factor-io/factor)
 [![Build Status](https://travis-ci.org/factor-io/factor.svg)](https://travis-ci.org/factor-io/factor)
 [![Gem Version](https://badge.fury.io/rb/factor.svg)](http://badge.fury.io/rb/factor)
+[![Inline docs](http://inch-ci.org/github/factor-io/factor.svg?branch=master)](http://inch-ci.org/github/factor-io/factor)
 
 Factor.io Server Runtime
 ==========
