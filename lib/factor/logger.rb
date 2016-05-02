@@ -18,6 +18,10 @@ module Factor
       puts "[#{time}] #{'  ' * @indentation}#{color(log_level, message)}"
     end
 
+    def debug(message)
+      log :debug, message
+    end
+
     def info(message)
       log :info, message
     end
@@ -38,6 +42,7 @@ module Factor
 
     def color(log_level, text)
       case log_level.to_sym
+      when :debug then Rainbow(text).color(43,43,43)
       when :error then Rainbow(text).red
       when :info then Rainbow(text).white.bright
       when :warn then Rainbow(text).yellow

@@ -49,6 +49,10 @@ module Factor
 
       protected
 
+      def debug(message)
+        log(:debug, message)
+      end
+
       def info(message)
         log(:info, message)
       end

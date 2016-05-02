@@ -23,6 +23,10 @@ module Factor
         Future.any(*events, &block)
       end
 
+      def debug(message)
+        log(:debug, message)
+      end
+
       def info(message)
         log(:info, message)
       end

@@ -27,6 +27,10 @@ module Factor
       notify_observers(:trigger, data)
     end
 
+    def debug(message)
+      log(:debug, message)
+    end
+
     def info(message)
       log(:info, message)
     end
