@@ -10,7 +10,6 @@ module Factor
     class RunCommand < Factor::Commands::Command
       def run(args, options)
         address      = args[0]
-        service_name = args[0].split('::')[0]
         parameters   = params(args[1..-1])
         connector    = load_connector(options, address, parameters)
 
