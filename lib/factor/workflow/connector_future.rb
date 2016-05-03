@@ -13,6 +13,15 @@ module Factor
         end
       end
 
+      def wait
+        @promise.execute if @promise.unscheduled?
+        begin
+          @promise.wait
+        rescue Interrupt
+          @action.stop if @action.respond_to?(:stop)
+        end
+      end
+
       def trigger(type, data)
         @subscribers[type] ||= []
         @subscribers[type].each {|subscriber| subscriber.call(data)}
