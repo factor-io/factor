@@ -7,16 +7,30 @@ require 'factor/logger'
 
 module Factor
   module Commands
-    # Base command with common methods used by all commands
+    # @abstract Subclass to implement new command line commands powered by 
+    #   commander. Subclasses use this to get access to protected methods for
+    #   logging and get access to settings. Used by {RunCommand} and
+    #   {WorkflowCommand}
     class Command
+      # @attribute [rw] logger
+      #   @return [Factor::Logger] logger for accepting logs
       attr_accessor :logger
 
+      # The default relative path to the settings file.
       DEFAULT_SETTINGS_FILENAME = File.expand_path('./.factor.yml')
 
+      # @param [Hash] options the options containing settings for a new command
+      # @option options [Factor::Logger] logger to be used for logging, by default
+      #   createas a new instance
       def initialize(options={})
         @logger = options[:logger] || Factor::Logger.new
       end
 
+      # Loads settings from a YAML settings file
+      # @param [Hash] options the options to select the file/default value
+      # @option options [Boolean] :verbose (false) whether the method should emit verbose logs
+      # @option options [String] :settings ('./.factor.yaml') the path to the YAML settings file
+      # @return [Hash] the settings loaded from the file, also avilable by calling {#settings}
       def load_settings(options)
         settings_file = DEFAULT_SETTINGS_FILENAME
         settings = {}
@@ -43,6 +57,8 @@ module Factor
         configatron[:settings].configure_from_hash(settings)
       end
 
+      # Gets the current settings that were loaded from the settings file.
+      # @return [Hash] the settings loaded from the settings file via {#load_settings}
       def settings
         configatron.settings.to_hash.inject({}){|memo,(k,v)| memo[k.to_s] = v; memo}
       end
@@ -72,7 +88,6 @@ module Factor
       def log(type, message)
         @logger.log(type, message) if @logger
       end
-
 
       private
 
