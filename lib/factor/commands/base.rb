@@ -13,8 +13,8 @@ module Factor
 
       DEFAULT_SETTINGS_FILENAME = File.expand_path('./.factor.yml')
 
-      def initialize
-        @logger = Factor::Logger.new
+      def initialize(options={})
+        @logger = options[:logger] || Factor::Logger.new
       end
 
       def load_settings(options)
