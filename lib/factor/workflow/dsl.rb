@@ -8,9 +8,8 @@ module Factor
       end
 
       def run(address, options={})
-
         connector_class = Factor::Connector.get(address)
-        connector = connector_class.new(options)
+        connector       = connector_class.new(options)
 
         Factor::Workflow::ConnectorFuture.new(connector)
       end
@@ -23,26 +22,39 @@ module Factor
         Future.any(*events, &block)
       end
 
+      # Logs a debug message
+      # @param message [String] message to log
       def debug(message)
         log(:debug, message)
       end
 
+      # Logs a informational message
+      # @param message [String] message to log
       def info(message)
         log(:info, message)
       end
 
+      # Logs a warning message
+      # @param message [String] message to log
       def warn(message)
         log(:warn, message)
       end
 
+      # Logs an error message
+      # @param message [String] message to log
       def error(message)
         log(:error, message)
       end
 
+      # Logs a success message
+      # @param message [String] message to log
       def success(message)
         log(:success, message)
       end
 
+      # Logs a string message of any type
+      # @param type [Symbol] type of message to log (:debug, :info, :warn, :error, :success)
+      # @param message [String] message to log
       def log(type, message)
         @logger.log(type, message) if @logger
       end
@@ -51,8 +63,6 @@ module Factor
         raise ArgumentError, "All actions must be an ConnectorFuture" unless actions.all? {|a| a.is_a?(ConnectorFuture) }
         actions.each {|a| a.on(type, &block) }
       end
-      
     end
-
   end
 end
