@@ -7,6 +7,10 @@ module Factor
         @logger = options[:logger]
       end
 
+      # Creates a new ConnectorFuture with the Connector action defined by the address
+      # @param address [String] reference to the connector
+      # @param options [Hash] Options to pass to the Connector
+      # @return [Factor::Workflow::ConnectorFuture] A future to execute the connector action
       def run(address, options={})
         connector_class = Factor::Connector.get(address)
         connector       = connector_class.new(options)
