@@ -1,8 +1,12 @@
 require 'observer'
 
 module Factor
+  # @abstract Subclass and override {#run} to implement a connector, optionally also implement #stop
   class Connector
     include Observable
+
+    # Registers the Connector so that it can be accessed via get
+    # @param connector [Factor::Connector] Connector to register
     def self.register(connector)
       if connector.ancestors.include?(self.class)
         raise ArgumentError, "Connector must be a Factor::Connector"
@@ -12,11 +16,15 @@ module Factor
       @@paths[underscore(connector.name)] = connector
     end
 
+    # Retreives a previously register Connector by a string name
+    # @param path [String] the reference to the class name
     def self.get(path)
       @@paths ||= {}
       @@paths[path]
     end
 
+    # Method to override to add the core functionality of the connector.
+    # @return [Hash] value after executing the connector
     def run
     end
 
