@@ -85,4 +85,15 @@ describe Factor::Workflow::Future do
     failure_future.wait
     expect(failure_future.value).to eq('type: ArgumentError, message: test')
   end
+
+  it 'can pass on to #then' do
+    then_future = Factor::Workflow::Future.new do
+      'Bob'
+    end.then do |name|
+      "Hello, #{name}"
+    end
+
+    then_future.wait
+    expect(then_future.value).to eq('Hello, Bob')
+  end
 end
