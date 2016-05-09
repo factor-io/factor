@@ -3,7 +3,6 @@ require 'json'
 
 require 'factor/commands/base'
 require 'factor/connector'
-# require 'factor/workflow/runtime'
 
 module Factor
   module Commands
