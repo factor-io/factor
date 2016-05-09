@@ -96,4 +96,60 @@ describe Factor::Workflow::Future do
     then_future.wait
     expect(then_future.value).to eq('Hello, Bob')
   end
+
+  describe 'aggregations' do
+    it 'can pass on all' do
+      f1 = Factor::Workflow::Future.new { 'a' }
+      f2 = Factor::Workflow::Future.new { 'a' }
+
+      f_all = Factor::Workflow::Future.all(f1,f2) { |f| f == 'a' }
+      f_all.wait
+
+      expect(f_all.value).to be true
+    end
+
+    it 'can fail on all' do
+      f1 = Factor::Workflow::Future.new { 'a' }
+      f2 = Factor::Workflow::Future.new { 'b' }
+
+      f_all = Factor::Workflow::Future.all(f1,f2) { |f| f == 'a' }
+      f_all.wait
+
+      expect(f_all.state).to be :rejected
+      expect(f_all.reason).to be_a(StandardError)
+      expect(f_all.reason.message).to eq('There were no successful events')
+    end
+
+    it 'can pass on any with all true' do
+      f1 = Factor::Workflow::Future.new { 'a' }
+      f2 = Factor::Workflow::Future.new { 'a' }
+
+      f_any = Factor::Workflow::Future.any(f1,f2) { |f| f == 'a' }
+      f_any.wait
+
+      expect(f_any.value).to be true
+    end
+
+    it 'can pass on any with one true' do
+      f1 = Factor::Workflow::Future.new { 'a' }
+      f2 = Factor::Workflow::Future.new { 'b' }
+
+      f_any = Factor::Workflow::Future.any(f1,f2) { |f| f == 'a' }
+      f_any.wait
+
+      expect(f_any.value).to be true
+    end
+
+    it 'can fail on any' do
+      f1 = Factor::Workflow::Future.new { 'b' }
+      f2 = Factor::Workflow::Future.new { 'b' }
+
+      f_any = Factor::Workflow::Future.any(f1,f2) { |f| f == 'a' }
+      f_any.wait
+
+      expect(f_any.state).to be :rejected
+      expect(f_any.reason).to be_a(StandardError)
+      expect(f_any.reason.message).to eq('There were no successful events')
+    end
+  end
 end
