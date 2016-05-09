@@ -3,6 +3,8 @@ require 'factor/workflow/future'
 module Factor
   module Workflow
     class ConnectorFuture < Future
+      attr_reader :action
+
       def initialize(action)
         @subscribers = {}
         @action = action
