@@ -17,6 +17,7 @@ describe Factor::Workflow::Future do
     expect(future.rejected?).to be false
     expect(future.fulfilled?).to be false
     expect(future.unscheduled?).to be true
+    expect(future.completed?).to be false
 
     future.execute
 
@@ -25,6 +26,7 @@ describe Factor::Workflow::Future do
     expect(future.rejected?).to be false
     expect(future.fulfilled?).to be false
     expect(future.unscheduled?).to be false
+    expect(future.completed?).to be false
     sleep 0.2
 
     expect(future.state).to eq(:fulfilled)
@@ -32,19 +34,22 @@ describe Factor::Workflow::Future do
     expect(future.rejected?).to be false
     expect(future.fulfilled?).to be true
     expect(future.unscheduled?).to be false
+    expect(future.completed?).to be true
 
     expect(future.value).to eq('test')
   end
 
-  it 'can return a value' do
+  it 'can wait' do
     future = Factor::Workflow::Future.new { 'test' }
 
     future.execute
     future.wait
     expect(future.state).to eq(:fulfilled)
+    expect(future.completed?).to be true
+    expect(future.fulfilled?).to be true
   end
 
-  it 'can wait' do
+  it 'can return a value' do
     future = Factor::Workflow::Future.new do
       sleep 0.1
       'test'
@@ -65,7 +70,19 @@ describe Factor::Workflow::Future do
     expect(future.rejected?).to be true
     expect(future.fulfilled?).to be false
     expect(future.unscheduled?).to be false
+    expect(future.completed?).to be true
 
     expect(future.reason).to be_a(ArgumentError)
+  end
+
+  it 'can handle failures with rescue' do
+    failure_future = Factor::Workflow::Future.new do
+      raise ArgumentError, 'test'
+    end.rescue do |error|
+      "type: #{error.class}, message: #{error.message}"
+    end
+
+    failure_future.wait
+    expect(failure_future.value).to eq('type: ArgumentError, message: test')
   end
 end
