@@ -56,4 +56,20 @@ describe Factor::Connector do
 
     connector.run
   end
+
+  it 'recgonizes deeper inheritence to Factor::Connector on initialize' do
+    module X
+      module Y
+        class Z < Factor::Connector
+        end
+      end
+    end
+    expect{Factor::Connector.register(X::Y::Z)}.not_to raise_error
+  end
+
+  it 'raises if not inherited from Factor::Connector on initialize' do
+    class FailClass
+    end
+    expect{Factor::Connector.register(FailClass)}.to raise_error(ArgumentError)
+  end
 end

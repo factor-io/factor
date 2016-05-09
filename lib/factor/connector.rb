@@ -8,9 +8,7 @@ module Factor
     # Registers the Connector so that it can be accessed via get
     # @param connector [Factor::Connector] Connector to register
     def self.register(connector)
-      if connector.ancestors.include?(self.class)
-        raise ArgumentError, "Connector must be a Factor::Connector"
-      end
+      raise ArgumentError, "Connector must be a Factor::Connector" unless connector.ancestors.include?(self)
 
       @@paths ||= {}
       @@paths[underscore(connector.name)] = connector
