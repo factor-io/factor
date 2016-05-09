@@ -1,7 +1,7 @@
 ![Factor.io Logo](/factor.png)
 
 [![Code Climate](https://codeclimate.com/github/factor-io/factor.png)](https://codeclimate.com/github/factor-io/factor)
-[![Coverage Status](https://coveralls.io/repos/factor-io/factor/badge.svg)](https://coveralls.io/r/factor-io/factor)
+[![Coverage Status](https://coveralls.io/repos/github/factor-io/factor/badge.svg?branch=master)](https://coveralls.io/github/factor-io/factor?branch=master)
 [![Dependency Status](https://gemnasium.com/factor-io/factor.svg)](https://gemnasium.com/factor-io/factor)
 [![Build Status](https://travis-ci.org/factor-io/factor.svg)](https://travis-ci.org/factor-io/factor)
 [![Gem Version](https://badge.fury.io/rb/factor.svg)](http://badge.fury.io/rb/factor)
