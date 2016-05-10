@@ -16,25 +16,50 @@ This is a gem with a command line interface `factor`. To install:
     gem install factor
 
 ## Basic Usage
-First, we need to install the dependencies
+First, we need to install the dependencies (via Bundler). 
+
+**Gemfile**:
 ```
-gem install factor-connector-web
+source "https://rubygems.org"
+
+# Using code from Github for latest (as opposed to RubyGems).
+gem 'factor', git: 'https://github.com/factor-io/factor.git'
+gem 'factor-connector-web', git: 'https://github.com/factor-io/connector-web.git'
 ```
 
 In a new project directory create a new file `workflow.rb` like this:
-**workflow.rb**
+
+**workflow.rb**:
 ```ruby
+require 'factor-connector-web'
+
 web_hook = run 'web::hook'
+
 web_hook.on(:trigger) do |post_info|
-    if post_info[:configured]
-        success "Workflow is listening on #{hook_info[:configured][:url]}"
-    else
-        info "Received a hook call: #{post_info}"
-    end
+  if post_info[:configured]
+    success 'Configured and listening on...'
+    success post_info[:configured][:url]
+  else
+    info post_info
+  end
 end
 
+web_hook.on(:log) do |log_info|
+  debug log_info[:message]
+end
+
+web_hook.execute
 web_hook.wait
 ```
 
 Now run this from the command line:
-`factor w`
+```
+bundle install
+bundle exec factor w workflow.rb
+```
+
+## Next
+
+- [Workflow Syntax](https://github.com/factor-io/factor/wiki/Workflow-Syntax): Factor.io workflows can do all sorts of magic, like running in parallel, aggregating command results, defining sequences, error handling, and more.
+- [Connectors](https://github.com/factor-io/factor/wiki/Connectors): These are the officially support Connectors (integrations).
+- [Custom Connectors](https://github.com/factor-io/factor/wiki/Creating-a-custom-connector): A guide for creating a custom Connector.
