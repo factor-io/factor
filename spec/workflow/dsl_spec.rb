@@ -5,6 +5,7 @@ require 'spec_helper'
 require 'factor/workflow/dsl'
 require 'factor/connector'
 require 'factor/workflow/connector_future'
+require 'factor/workflow/future'
 
 describe Factor::Workflow::DSL do
   it 'can log' do
@@ -38,5 +39,17 @@ describe Factor::Workflow::DSL do
     expect(connector_future).to be_a(Factor::Workflow::ConnectorFuture)
     expect(connector_future.action).to be_a(Sample)
     expect(connector_future.action.test_param).to eq('foo')
+  end
+
+  it 'aggregators return a future' do
+    f1  = Factor::Workflow::Future.new { 1 }
+    f2  = Factor::Workflow::Future.new { 2 }
+    dsl = Factor::Workflow::DSL.new
+
+    expect(Factor::Workflow::Future).to receive(:any)
+    dsl.any(f1,f1)
+
+    expect(Factor::Workflow::Future).to receive(:all)
+    dsl.all(f1,f1)
   end
 end
