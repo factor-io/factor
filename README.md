@@ -63,3 +63,4 @@ bundle exec factor w workflow.rb
 - [Workflow Syntax](https://github.com/factor-io/factor/wiki/Workflow-Syntax): Factor.io workflows can do all sorts of magic, like running in parallel, aggregating command results, defining sequences, error handling, and more.
 - [Connectors](https://github.com/factor-io/factor/wiki/Connectors): These are the officially support Connectors (integrations).
 - [Custom Connectors](https://github.com/factor-io/factor/wiki/Creating-a-custom-connector): A guide for creating a custom Connector.
+- [More examples](https://github.com/factor-io/example-workflows): This repo contains a library of examples that demonstrate all the Factor.io workflow syntax capabilities as well as the officially supported Conenctors.
