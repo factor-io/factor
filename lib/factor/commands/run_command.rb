@@ -10,9 +10,10 @@ module Factor
       def run(args, options)
         address      = args[0]
         parameters   = params(args[1..-1])
-        connector    = load_connector(options, address, parameters)
 
         load_settings(options)
+        
+        connector = load_connector(options, address, parameters)
         
         if options.verbose
           info "Running '#{address}(#{parameters})'"
@@ -36,13 +37,19 @@ module Factor
 
       def load_connector(options, address, parameters)
         service_name = address.split('::')[0]
+        connector_settings = settings[service_name] || {}
+
         if options.connector
           info "Loading #{options.connector}" if options.verbose
           require options.connector
         end
         connector_class = Factor::Connector.get(address)
         raise ArgumentError, "Connector '#{address}' not found" unless connector_class
-        connector = connector_class.new(parameters.merge(settings[service_name] || {}))
+
+        info "Settings:   #{connector_settings || {}}" if options.verbose
+        info "Parameters: #{parameters || {}}" if options.verbose
+
+        connector = connector_class.new(parameters.merge(connector_settings))
         connector
       end
     end
